@@ -1,0 +1,8 @@
+Create build directory for out of source build
+> mkdir build
+Change directory to build directory
+> cd build
+Create Eclipse project files using cmake (you may change the build type according to your needs)
+> cmake -G"Eclipse CDT4 - Unix Makefiles" -D CMAKE_BUILD_TYPE=Debug ../src
+Import the project into Eclipse or use terminal to build the project
+You're ready to go...
