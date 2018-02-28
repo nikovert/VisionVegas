@@ -1,1 +1,0 @@
-/usr/bin/c++   -ansi -O0 -g -fno-inline -Wall -Wunused -Wextra -DDISPLAY -g    CMakeFiles/recognition.dir/image.cpp.o CMakeFiles/recognition.dir/main.cpp.o CMakeFiles/recognition.dir/geom.cpp.o CMakeFiles/recognition.dir/card.cpp.o  -o recognition -rdynamic 
