@@ -78,6 +78,6 @@ int Card::getValue(void)
 
 	// TODO: recognize card value
 
-	return 43;
+	return 20;
 }
 
