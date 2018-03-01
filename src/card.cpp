@@ -8,12 +8,14 @@
 
 #include <card.hpp>
 
+#include <carddetection.cpp>
+
 bool Card::updateImage(std::string& errmsg)
 {
 	// uncomment when you want to use a new snapshot from the camera instead of using the same image over and over ...
 	// system("/home/ppsadm/FrameGrabber/requestframe.sh"); // image will be copied to ./frame.pnm
 	//return(im.readPNM("../captured.pnm",errmsg));
-	return(im.readPNM("../card_images/s10.2.pnm",errmsg));
+	return(im.readPNM("../../card_images/s10.2.pnm",errmsg));
 }
 
 bool Card::isBackground(const Point2d& point, uchar red_threshold) const
