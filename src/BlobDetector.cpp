@@ -7,6 +7,9 @@
 
 #include <BlobDetector.h>
 
+const RGB white = RGB(255,255,255);
+const RGB black = RGB(0,0,0);
+
 BlobDetector::BlobDetector() {
 	// TODO Auto-generated constructor stub
 
@@ -23,6 +26,8 @@ void BlobDetector::AddRGBRange(RGB start, RGB end)
 
 std::vector<BLOB> BlobDetector::FindBlobs(Image im)
 {
+	original = im;
+	Threshold();
 	// To implement
 
 	std::vector<BLOB> blobs;
@@ -31,5 +36,23 @@ std::vector<BLOB> BlobDetector::FindBlobs(Image im)
 
 void BlobDetector::Threshold()
 {
-	// To implement
+	const unsigned w = original.width();
+	const unsigned h = original.height();
+	thresholded = Image(w,h,white);
+
+	for (unsigned x = 0; x < w; x++) {
+		for (unsigned y = 0; y < h; y++) {
+			bool flag = false;
+			RGB pixel = original.at(x,y);
+			for (std::vector<RGB_RANGE>::const_iterator range = colorRanges.begin(); range != colorRanges.end(); range++) {
+				if (range->begin <= pixel && pixel <= range->end) {
+					flag = true;
+					break;
+				}
+			}
+			if (flag) thresholded.at(x,y) = black;
+		}
+	}
+
+
 }
