@@ -12,7 +12,8 @@
 #include <string>
 #include <iostream>
 #include "geom.hpp"
-#include "BlobDetector.h"
+
+// class BlobDetector;
 
 typedef unsigned char uchar;
 
@@ -49,7 +50,7 @@ std::ostream& operator<<(std::ostream& os, const RGB& color);
 class Image
 //-------------------------------------------------------------------------------------
 {
-friend BlobDetector;
+// friend BlobDetector;
 
 private:
 	RGB* m_data; // note: storage in row-major order
