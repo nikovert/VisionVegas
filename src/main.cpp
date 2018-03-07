@@ -16,6 +16,7 @@
 #include <iomanip>
 #include <vector>
 
+
 void error(const char *fmt, ...)
 {
     va_list args;
@@ -44,28 +45,71 @@ void demo(void)
 	// draw boundary points on the output image
 	for(std::vector<Point2d>::const_iterator it=boundary_points.begin();it!=boundary_points.end();++it)
 		im.drawMarker(*it, RGB(255,255,0),1);
-
+//_-------------------------------------------------------------------------------------------------------------------------------------------
+    // detect corners
+    
 	// find consecutive collinear points and fit a line to them
 	std::vector<Point2d>::const_iterator it=boundary_points.begin();
+    //Line 1
 	while(!collinear(*it,*(it+2),*(it+4),2)) ++it;
 	Line2d line1(*it,*(it+4));
-
 	// find the next point not on the line
 	while (line1.distance(*it) < 20) ++it;
 
 	// find the next consecutive set of collinear points and fit another line to them
+    //Line 2
 	while(!collinear(*it,*(it+2),*(it+4),2)) ++it;
 	Line2d line2(*it,*(it+4));
+    while (line2.distance(*it) < 20) ++it;
+    
+    //Line 3
+    while(!collinear(*it,*(it+2),*(it+4),2)) ++it;
+    Line2d line3(*it,*(it+4));
+    while (line3.distance(*it) < 20) ++it;
+    
+    // //Line 4
+    while(!collinear(*it,*(it+2),*(it+4),2)) ++it;
+    Line2d line4(*it,*(it+4));
 
 	// draw lines
-	im.drawLine(line1, RGB(0,0,0));
-	im.drawLine(line2, RGB(0,0,255));
+	im.drawLine(line1, RGB(0,0,0));     // 1 -> 2
+	im.drawLine(line2, RGB(0,0,255));   // 4 -> 1
+    im.drawLine(line3, RGB(0,255,0));   // 3 -> 4
+    im.drawLine(line4, RGB(0,255,255)); // 2 -> 3
 
 	// intersect lines and draw intersection
-	Point2d corner;
-	line1.intersect(line2, corner);
-	im.drawMarker(corner, RGB(255,0,0), 2);
+	Point2d corner1, corner2, corner3, corner4;
+    /*
+                1-------2
+                |       |
+                |       |
+                |       |
+                |       |
+                4-------3
+     */
+    
+    //Mark corners
+	line1.intersect(line2, corner1);
+	im.drawMarker(corner1, RGB(255,0,0), 2);
+    
+    line1.intersect(line4, corner2);
+    im.drawMarker(corner2, RGB(255,0,0), 2);
+    
+    line4.intersect(line3, corner3);
+    im.drawMarker(corner3, RGB(255,0,0), 2);
+    
+    line2.intersect(line3, corner4);
+    im.drawMarker(corner4, RGB(255,0,0), 2);
 
+    //Mark card boundaries
+    Line2d top(corner1, corner2), bottom(corner4, corner3), left(corner1, corner4), right(corner2, corner3);
+    im.drawLine(top, RGB(255,125,125));
+    im.drawLine(bottom, RGB(255,125,125));
+    im.drawLine(left, RGB(255,125,125));
+    im.drawLine(right, RGB(255,125,125));
+    
+    
+    
 	// get value of the card
 	std::cout << "Card value: " << card.getValue() << "\n";
 

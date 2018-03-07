@@ -11,6 +11,12 @@
 
 using namespace std;
 
+double Line2d::angle(void)
+{
+    //returns the angle of a vector
+    return 0;
+}
+
 double Line2d::distance(const Point2d& p)
 {
 	// construct homogeneous line as ax + by + c = 0, where the normal is n=(a,b)

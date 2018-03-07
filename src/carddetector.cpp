@@ -5,9 +5,10 @@
 //  Created by Niko Vertovec on 01.03.18.
 //
 
-#include <card.hpp>
-
 // Based on the blog: http://arnab.org/blog/so-i-suck-24-automating-card-games-using-opencv-and-python
+
+#include <carddetector.hpp>
+
 
 /*
 Once we have the contours of the card, we can go about identifying the rectangle representation of each card.
@@ -27,9 +28,9 @@ This is done by approximating a polynomial from the contour (which is simply a v
      warp = cv2.warpPerspective(im,transform,(450,450))
 */
 
-bool isolateCard(std::vector<Point2d>& boundary_points)
+bool Carddetector::isolateCard(void)
 {
-    return false;
+    return true;
 }
 
 

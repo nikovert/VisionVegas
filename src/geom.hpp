@@ -76,6 +76,7 @@ public:
 public:
 	bool isDegenerate() const { return(p1==p2); }
 	double distance(const Point2d& p);
+    double angle();
 	bool intersect(const Line2d& other, Point2d& result); // intersect two lines, returns false if they do not intersect (parallel lines)
 	Vector3d homogenize() const; // convert {p1,p2} line representation to Vector3(a,b,c), where the line is defined by a*x+b*y+c=0
 };
