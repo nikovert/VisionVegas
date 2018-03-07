@@ -8,8 +8,6 @@
 
 #include <card.hpp>
 
-#include <carddetection.cpp>
-
 bool Card::updateImage(std::string& errmsg)
 {
 	// uncomment when you want to use a new snapshot from the camera instead of using the same image over and over ...

@@ -16,3 +16,20 @@ BlobDetector::~BlobDetector() {
 	// TODO Auto-generated destructor stub
 }
 
+void BlobDetector::AddRGBRange(RGB start, RGB end)
+{
+	colorRanges.push_back(RGB_RANGE(start,end));
+}
+
+std::vector<BLOB> BlobDetector::FindBlobs(Image im)
+{
+	// To implement
+
+	std::vector<BLOB> blobs;
+	return blobs;
+}
+
+void BlobDetector::Threshold()
+{
+	// To implement
+}
