@@ -92,5 +92,7 @@ bool collinear(const Point2d& p1, const Point2d& p2, const Point2d& p3, double t
 std::ostream& operator<<(std::ostream& os, const Vector2d& v);
 std::ostream& operator<<(std::ostream& os, const Vector3d& v);
 std::ostream& operator<<(std::ostream& os, const Line2d& l);
+bool operator>(const Line2d& line1, const Line2d& line2);
+bool operator<(const Line2d& line1, const Line2d& line2);
 
 #endif

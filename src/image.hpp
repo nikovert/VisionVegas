@@ -13,6 +13,8 @@
 #include <iostream>
 #include "geom.hpp"
 
+// class BlobDetector;
+
 typedef unsigned char uchar;
 
 struct RGB
@@ -23,6 +25,23 @@ struct RGB
 	RGB() : r(0), g(0), b(0) { }
 	RGB(uchar red, uchar green, uchar blue) : r(red), g(green), b(blue) { }
 	void operator=(const RGB& other) { r=other.r; g=other.g; b=other.b; }
+	bool operator<=(const RGB& other)
+	{
+		return (r <= other.r) && (g <= other.g) && (b <= other.b);
+	}
+	bool operator<(const RGB& other)
+	{
+		return (r < other.r) && (g < other.g) && (b < other.b);
+	}
+	bool operator>=(const RGB& other)
+	{
+		return (r >= other.r) && (g >= other.g) && (b >= other.b);
+	}
+	bool operator>(const RGB& other)
+	{
+		return (r > other.r) && (g > other.g) && (b > other.b);
+	}
+
 };
 
 std::ostream& operator<<(std::ostream& os, const RGB& color);
@@ -31,6 +50,8 @@ std::ostream& operator<<(std::ostream& os, const RGB& color);
 class Image
 //-------------------------------------------------------------------------------------
 {
+// friend BlobDetector;
+
 private:
 	RGB* m_data; // note: storage in row-major order
 	unsigned m_width;
@@ -68,6 +89,5 @@ public: // file input/output
 	bool readPNM(const std::string& filename, std::string& errmsg);
 	bool writePNM(const std::string& filename, std::string& errmsg) const;
 };
-
 
 #endif

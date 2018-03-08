@@ -11,12 +11,54 @@
 
 using namespace std;
 
+#define PI 3.14159265
+
 double Line2d::angle(void)
 {
-    //returns the angle of a vector
-    return 0;
+    //returns the angle of a line in degrees
+    Point2d p = p2 - p1;
+    return atan2(p.x, p.y)*180/PI;
 }
 
+bool operator>(const Line2d &line1, const Line2d &line2)
+{
+    double x11 = line1.p1.x;
+    double x12 = line1.p2.x;
+    
+    double x21 = line2.p1.x;
+    double x22 = line2.p2.x;
+    
+    double y11 = line1.p1.y;
+    double y12 = line1.p2.y;
+    
+    double y21 = line2.p1.y;
+    double y22 = line2.p2.y;
+    
+    double length1 = (x11-x12)*(x11-x12) + (y11-y12)*(y11-y12);
+    double length2 = (x21-x22)*(x21-x22) + (y21-y22)*(y21-y22);
+    
+    return length1 > length2;
+}
+
+bool operator< (const Line2d &line1, const Line2d &line2)
+{
+    double x11 = line1.p1.x;
+    double x12 = line1.p2.x;
+    
+    double x21 = line2.p1.x;
+    double x22 = line2.p2.x;
+    
+    double y11 = line1.p1.y;
+    double y12 = line1.p2.y;
+    
+    double y21 = line2.p1.y;
+    double y22 = line2.p2.y;
+    
+    double length1 = (x11-x12)*(x11-x12) + (y11-y12)*(y11-y12);
+    double length2 = (x21-x22)*(x21-x22) + (y21-y22)*(y21-y22);
+    
+    return length1 < length2;
+}
 double Line2d::distance(const Point2d& p)
 {
 	// construct homogeneous line as ax + by + c = 0, where the normal is n=(a,b)
