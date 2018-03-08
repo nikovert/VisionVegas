@@ -8,33 +8,7 @@
 #include <carddetector.hpp>
 #define PI 3.14159265
 
-Point2d mintranslation(Point2d corner1,Point2d corner2,Point2d corner3,Point2d corner4);
-/*
-bool** Carddetector::mask(const Point2d &corner1, const Point2d &corner2, const Point2d &corner3, const Point2d &corner4)
-{
-    Image pic;
-    playingcard.cloneImageTo(pic);
-    bool** maskmap;
-    
-    unsigned width = pic.width();
-    unsigned height = pic.height();
-    bool array[width][height];
-    
-    //create mask
-    for(unsigned x0 = 0; x0 < pic.width(); x0++){
-        for(unsigned y0 = 0; y0 < pic.height(); y0++){
-            Point2d pixel(x0,y0);
-            std::cout << pixel << std::endl;
-            bool value = inRectangle(pixel, corner1, corner2, corner3, corner4);
-            std::cout << "value: " << value << std::endl;
-            array[x0][y0] = value;
-            std::cout << "next iteration" << std::endl;
-        }
-    }
-    //maskmap = array;
-    return **array;
-}
- */
+Point2d mintranslation(Vector3d corner1,Vector3d corner2,Vector3d corner3,Vector3d corner4);
 
 bool Carddetector::isolateCard(std::vector<Point2d> boundary_points)
 {
@@ -73,6 +47,7 @@ bool Carddetector::isolateCard(std::vector<Point2d> boundary_points)
     
     // intersect lines and draw intersection
     Point2d corner1, corner2, corner3, corner4;
+    Point2d tmpcorner1, tmpcorner2, tmpcorner3, tmpcorner4;
     /*
      1-------2
      |       |
@@ -83,17 +58,28 @@ bool Carddetector::isolateCard(std::vector<Point2d> boundary_points)
      */
     
     //Mark corners
-    line1.intersect(line4, corner1);
-    pic.drawMarker(corner1, RGB(255,0,0), 2);
+    line1.intersect(line4, tmpcorner1);
+    line1.intersect(line2, tmpcorner2);
+    line2.intersect(line3, tmpcorner3);
+    line4.intersect(line3, tmpcorner4);
     
-    line1.intersect(line2, corner2);
+    if(tmpcorner1.x < tmpcorner2.x){
+        corner1 = tmpcorner1;
+        corner2 = tmpcorner2;
+        corner3 = tmpcorner3;
+        corner4 = tmpcorner4;
+    }
+    else{
+        corner1 = tmpcorner2;
+        corner2 = tmpcorner1;
+        corner3 = tmpcorner4;
+        corner4 = tmpcorner3;
+    }
+    
+    pic.drawMarker(corner1, RGB(255,255,0), 2);
     pic.drawMarker(corner2, RGB(255,0,0), 2);
-    
-    line2.intersect(line3, corner3);
     pic.drawMarker(corner3, RGB(255,0,0), 2);
-    
-    line4.intersect(line3, corner4);
-    pic.drawMarker(corner4, RGB(255,0,0), 2);
+    pic.drawMarker(corner4, RGB(255,0,255), 2);
     
     //Mark card boundaries
     Line2d top(corner1, corner2), bottom(corner4, corner3), left(corner1, corner4), right(corner2, corner3);
@@ -102,8 +88,16 @@ bool Carddetector::isolateCard(std::vector<Point2d> boundary_points)
     pic.drawLine(left, RGB(255,125,125));
     pic.drawLine(right, RGB(255,125,125));
     
-    //determine if we have to flip by 90 degrees.
-    bool flip = line1 > line4;
+    //Get dimesnions of the card
+    unsigned cardHeight, cardWidth;
+    if(top.length() > bottom.length())
+        cardWidth = (unsigned) top.length() + 5;
+    else
+        cardWidth = (unsigned) bottom.length() + 5;
+    if(left.length() > right.length())
+        cardHeight = (unsigned) left.length() + 5;
+    else
+        cardHeight = (unsigned) right.length() + 5;
     
     //calculate the rotation angle
     double rotation_angle_error = (line4.angle()-180 - line2.angle())/2;
@@ -112,43 +106,73 @@ bool Carddetector::isolateCard(std::vector<Point2d> boundary_points)
         return false;
     }
     
-    double rotation_angle = -(line2.angle() + rotation_angle_error/2);
-    if(flip) rotation_angle+= 90;
+    //determine if we have to flip by 90 degrees.
+    bool flip = top > left;
+    
+    double rotation_angle = (line2.angle() + rotation_angle_error/2);
+    if(!flip) rotation_angle += 90;
+    std::cout << "flip: " << flip << std::endl;
     std::cout << "rotate by " << rotation_angle << std::endl;
     
     rotation_angle = rotation_angle *(PI/180);
-    Matrix3x3 rotationMatrix(cos(rotation_angle),sin(rotation_angle),0, -sin(rotation_angle),cos(rotation_angle),0, 0,0,1);
+    Matrix3x3 rotationMatrix(cos(rotation_angle),-sin(rotation_angle),0, sin(rotation_angle),cos(rotation_angle),0, 0,0,1);
+    
+    //Calculate Matrix to translate to center
+    Point2d center;
+    Line2d crossLine1(corner1, corner3);
+    Line2d crossLine2(corner2, corner4);
+    crossLine1.intersect(crossLine2, center);
+    Matrix3x3 centerTranslationMatrix(1,0,-center.x, 0,1,-center.y, 0,0,1);
+    Matrix3x3 centerTranslationMatrixBack(1,0,center.x, 0,1,center.y, 0,0,1);
     
     //calculate the translation
-    Point2d translation = mintranslation(corner1,corner2,corner3,corner4);
+    Vector3d cornerVec1(corner1.x, corner1.y, 1);
+    Vector3d cornerVec2(corner2.x, corner2.y, 1);
+    Vector3d cornerVec3(corner3.x, corner3.y, 1);
+    Vector3d cornerVec4(corner4.x, corner4.y, 1);
+    
+    cornerVec1 = centerTranslationMatrixBack * rotationMatrix * centerTranslationMatrix * cornerVec1;
+    cornerVec2 = centerTranslationMatrixBack * rotationMatrix * centerTranslationMatrix * cornerVec2;
+    cornerVec3 = centerTranslationMatrixBack * rotationMatrix * centerTranslationMatrix * cornerVec3;
+    cornerVec4 = centerTranslationMatrixBack * rotationMatrix * centerTranslationMatrix * cornerVec4;
+    
+    Point2d translation = mintranslation(cornerVec1,cornerVec2,cornerVec3,cornerVec4);
     std::cout << "translation: " << translation << std::endl;
     
     Matrix3x3 translationMatrix(1,0,-translation.x, 0,1,-translation.y, 0,0,1);
     
     //move, roatate and cut
+    Image cardimage, tmpimage;
+    if(flip){
+        unsigned tmp = cardHeight;
+        cardHeight = cardWidth;
+        cardWidth = tmp;
+    }
+    //tmp, shouldn't be needed
+    cardHeight = pic.height();
+    cardWidth = pic.width();
     
-    Image cardimage;
-    cardimage.create(pic.width(), pic.height(), RGB(0,0,0));
+    cardimage.create(cardWidth, cardWidth, RGB(0,0,0));
+    tmpimage.create(pic.width(), pic.height(), RGB(0,0,0));
     
     for(unsigned x0 = 1; x0 < pic.width(); x0++){
         for(unsigned y0 = 1; y0 < pic.height(); y0++){
             Point2d pixel(x0, y0);
-            //std::cout << "checking: " << x0 << " , " << y0;
             if(inRectangle(pixel, corner1, corner2, corner3, corner4)){ // only if the pixel is part of the card;
-                //std::cout << " ... Success! new Pixel: ";
                 Vector3d pixel3d(x0,y0,1);
-                Vector3d newPixel = translationMatrix*pixel3d;
-                //std::cout << newPixel;
+                Vector3d newPixel = translationMatrix * centerTranslationMatrixBack * rotationMatrix * centerTranslationMatrix*pixel3d;
                 cardimage.at(newPixel.x, newPixel.y) = pic.at(x0, y0);
+                newPixel = pixel3d;
+                tmpimage.at(newPixel.x, newPixel.y) = pic.at(x0, y0);
             }
-            //std::cout << std::endl;
         }
     }
     
-    
     std::string errmsg;
-    //write new image
+    
+    //write new images
     if(!cardimage.writePNM("output_crop.pnm",errmsg)) return false;
+    if(!tmpimage.writePNM("output_tmp.pnm",errmsg)) return false;
     
     //wirte old image
     if(!pic.writePNM("output.pnm",errmsg)) return false;
@@ -156,7 +180,7 @@ bool Carddetector::isolateCard(std::vector<Point2d> boundary_points)
     return true;
 }
 
-Point2d mintranslation(Point2d corner1,Point2d corner2,Point2d corner3,Point2d corner4){
+Point2d mintranslation(Vector3d corner1,Vector3d corner2,Vector3d corner3,Vector3d corner4){
     //x
     double xtrans;
         if(corner1.x > corner2.x)
@@ -179,6 +203,3 @@ Point2d mintranslation(Point2d corner1,Point2d corner2,Point2d corner3,Point2d c
         ytrans = corner4.y;
     return Point2d(xtrans, ytrans);
 }
-
-
-

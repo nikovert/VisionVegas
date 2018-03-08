@@ -69,7 +69,10 @@ bool inRectangle(const Point2d pixel, const Point2d &corner1, const Point2d &cor
     //If the corner is in the rectangle: A = A1 + A2 + A3 + A4
     //if the corner is outside the rectangle: A < A1 + A2 + A3 + A4
     
-    return (A > (A1 + A2 + A3 + A4));
+    //aloud error
+    double epsilon = 10;
+    
+    return (A > (A1 + A2 + A3 + A4 - epsilon));
 }
 
 double Line2d::angle(void) const
