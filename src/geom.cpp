@@ -13,31 +13,33 @@ using namespace std;
 
 #define PI 3.14159265
 
-double Line2d::angle(void)
+bool inRectangle(const Line2d &line1, const Line2d &line2, const Line2d &line3, const Line2d &line4){
+    double a1(line1.length()),a2(line2.length()),a3(line3.length()),a4(line4.length());
+    
+    return false;
+}
+
+double Line2d::angle(void) const
 {
     //returns the angle of a line in degrees
     Point2d p = p2 - p1;
     return atan2(p.x, p.y)*180/PI;
 }
 
+double Line2d::length(void) const
+{
+    double x11 = p1.x;
+    double x12 = p2.x;
+    
+    double y11 = p1.y;
+    double y12 = p2.y;
+    
+    return (x11-x12)*(x11-x12) + (y11-y12)*(y11-y12);
+}
+
 bool operator>(const Line2d &line1, const Line2d &line2)
 {
-    double x11 = line1.p1.x;
-    double x12 = line1.p2.x;
-    
-    double x21 = line2.p1.x;
-    double x22 = line2.p2.x;
-    
-    double y11 = line1.p1.y;
-    double y12 = line1.p2.y;
-    
-    double y21 = line2.p1.y;
-    double y22 = line2.p2.y;
-    
-    double length1 = (x11-x12)*(x11-x12) + (y11-y12)*(y11-y12);
-    double length2 = (x21-x22)*(x21-x22) + (y21-y22)*(y21-y22);
-    
-    return length1 > length2;
+    return line1.length() > line2.length();
 }
 
 bool operator< (const Line2d &line1, const Line2d &line2)

@@ -46,15 +46,16 @@ void demo(void)
 	// draw boundary points on the output image
 	for(std::vector<Point2d>::const_iterator it=boundary_points.begin();it!=boundary_points.end();++it)
 		im.drawMarker(*it, RGB(255,255,0),1);
-
+    
     Carddetector detector(card);
     detector.isolateCard(boundary_points);
+    
     
 	// get value of the card
 	std::cout << "Card value: " << card.getValue() << "\n";
 
 	// write image to disk
-	if(!im.writePNM("output.pnm",errmsg)) error("%s\n",errmsg.c_str());
+	//if(!im.writePNM("output.pnm",errmsg)) error("%s\n",errmsg.c_str());
 
 	// display image using an external program
 	system("eog ./output.pnm");

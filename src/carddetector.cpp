@@ -7,6 +7,12 @@
 
 #include <carddetector.hpp>
 
+Point2d mintranslation(Point2d corner1,Point2d corner2,Point2d corner3,Point2d corner4);
+
+bool Carddetector::mask(){
+    return false;
+}
+
 bool Carddetector::isolateCard(std::vector<Point2d> boundary_points)
 {
     Image pic;
@@ -85,7 +91,43 @@ bool Carddetector::isolateCard(std::vector<Point2d> boundary_points)
     double rotation_angle = -(line2.angle() + rotation_angle_error/2);
     if(flip) rotation_angle+= 90;
     std::cout << "rotate by " << rotation_angle << std::endl;
+    
+    //calculate the translation
+    Point2d translation = mintranslation(corner1,corner2,corner3,corner4);
+    std::cout << "translation: " << translation << std::endl;
+    
+    
+    
+    
+    //wirte image
+    std::string errmsg;
+    if(!pic.writePNM("output.pnm",errmsg)) return false;
+    
     return true;
+}
+
+Point2d mintranslation(Point2d corner1,Point2d corner2,Point2d corner3,Point2d corner4){
+    //x
+    double xtrans;
+        if(corner1.x > corner2.x)
+            xtrans = corner2.x;
+        else
+            xtrans = corner1.x;
+        if(xtrans > corner3.x)
+            xtrans = corner3.x;
+        if(xtrans > corner4.x)
+            xtrans = corner4.x;
+    //y
+    double ytrans;
+    if(corner1.y > corner2.y)
+        ytrans = corner2.y;
+    else
+        ytrans = corner1.y;
+    if(ytrans > corner3.y)
+        ytrans = corner3.y;
+    if(ytrans > corner4.y)
+        ytrans = corner4.y;
+    return Point2d(xtrans, ytrans);
 }
 
 

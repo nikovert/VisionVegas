@@ -15,10 +15,10 @@
 
 class Carddetector
 {
-private:
-    Card playingcard;
 public:
+    Card playingcard;
     Carddetector(Card& ca) {playingcard = ca;}
     bool isolateCard(std::vector<Point2d> boundary_points);
+    bool mask();
 };
 #endif /* carddetector_h */
