@@ -83,6 +83,19 @@ public:
 };
 
 //-------------------------------------------------------------------------------------
+class Matrix3x3
+//-------------------------------------------------------------------------------------
+{
+public:
+    double m11, m12, m13;
+    double m21, m22, m23;
+    double m31, m32, m33;
+public:
+    Matrix3x3() : m11(0), m12(0), m13(0),m21(0), m22(0), m23(0),m31(0), m32(0), m33(0) { }
+    Matrix3x3(const double& p11, const double& p12,  const double& p13, const double& p21, const double& p22, const double& p23, const double& p31, const double& p32, const double& p33) : m11(p11), m12(p12), m13(p13),m21(p21), m22(p22), m23(p23),m31(p31), m32(p32), m33(p33) { }
+    
+};
+//-------------------------------------------------------------------------------------
 //			Global functions
 //-------------------------------------------------------------------------------------
 
@@ -93,7 +106,11 @@ bool collinear(const Point2d& p1, const Point2d& p2, const Point2d& p3, double t
 std::ostream& operator<<(std::ostream& os, const Vector2d& v);
 std::ostream& operator<<(std::ostream& os, const Vector3d& v);
 std::ostream& operator<<(std::ostream& os, const Line2d& l);
+std::ostream& operator<<(std::ostream& os, const Matrix3x3& mat);
+Vector3d operator*(const Matrix3x3& mat, const Vector3d& vec);
+Matrix3x3 operator*(const Matrix3x3& mat, const Matrix3x3& vec);
 bool operator>(const Line2d& line1, const Line2d& line2);
 bool operator<(const Line2d& line1, const Line2d& line2);
+bool inRectangle(const Point2d pixel, const Point2d &corner1, const Point2d &corner2, const Point2d &corner3, const Point2d &corner4);
 
 #endif

@@ -63,6 +63,14 @@ void demo(void)
 
 int main(int, const char **)
 {
+    /*
+        Vector3d vec1(4,4,4);
+        Matrix3x3 mat1(1,0,0, 0,1,0, 0,0,1);
+        Matrix3x3 mat2(11,12,13, 21,22,23, 31,32,33);
+        Matrix3x3 mat3(1,1,1, 1,1,1, 1,1,1);
+        std::cout << mat2*mat2 <<std::endl;
+     */
+    
 	demo();
 	return 0;
 }

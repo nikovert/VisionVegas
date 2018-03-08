@@ -6,12 +6,35 @@
 //
 
 #include <carddetector.hpp>
+#define PI 3.14159265
 
 Point2d mintranslation(Point2d corner1,Point2d corner2,Point2d corner3,Point2d corner4);
-
-bool Carddetector::mask(){
-    return false;
+/*
+bool** Carddetector::mask(const Point2d &corner1, const Point2d &corner2, const Point2d &corner3, const Point2d &corner4)
+{
+    Image pic;
+    playingcard.cloneImageTo(pic);
+    bool** maskmap;
+    
+    unsigned width = pic.width();
+    unsigned height = pic.height();
+    bool array[width][height];
+    
+    //create mask
+    for(unsigned x0 = 0; x0 < pic.width(); x0++){
+        for(unsigned y0 = 0; y0 < pic.height(); y0++){
+            Point2d pixel(x0,y0);
+            std::cout << pixel << std::endl;
+            bool value = inRectangle(pixel, corner1, corner2, corner3, corner4);
+            std::cout << "value: " << value << std::endl;
+            array[x0][y0] = value;
+            std::cout << "next iteration" << std::endl;
+        }
+    }
+    //maskmap = array;
+    return **array;
 }
+ */
 
 bool Carddetector::isolateCard(std::vector<Point2d> boundary_points)
 {
@@ -88,19 +111,46 @@ bool Carddetector::isolateCard(std::vector<Point2d> boundary_points)
         std::cerr << "Angles don't match!" << std::endl;
         return false;
     }
+    
     double rotation_angle = -(line2.angle() + rotation_angle_error/2);
     if(flip) rotation_angle+= 90;
     std::cout << "rotate by " << rotation_angle << std::endl;
+    
+    rotation_angle = rotation_angle *(PI/180);
+    Matrix3x3 rotationMatrix(cos(rotation_angle),sin(rotation_angle),0, -sin(rotation_angle),cos(rotation_angle),0, 0,0,1);
     
     //calculate the translation
     Point2d translation = mintranslation(corner1,corner2,corner3,corner4);
     std::cout << "translation: " << translation << std::endl;
     
+    Matrix3x3 translationMatrix(1,0,-translation.x, 0,1,-translation.y, 0,0,1);
+    
+    //move, roatate and cut
+    
+    Image cardimage;
+    cardimage.create(pic.width(), pic.height(), RGB(0,0,0));
+    
+    for(unsigned x0 = 1; x0 < pic.width(); x0++){
+        for(unsigned y0 = 1; y0 < pic.height(); y0++){
+            Point2d pixel(x0, y0);
+            //std::cout << "checking: " << x0 << " , " << y0;
+            if(inRectangle(pixel, corner1, corner2, corner3, corner4)){ // only if the pixel is part of the card;
+                //std::cout << " ... Success! new Pixel: ";
+                Vector3d pixel3d(x0,y0,1);
+                Vector3d newPixel = translationMatrix*pixel3d;
+                //std::cout << newPixel;
+                cardimage.at(newPixel.x, newPixel.y) = pic.at(x0, y0);
+            }
+            //std::cout << std::endl;
+        }
+    }
     
     
-    
-    //wirte image
     std::string errmsg;
+    //write new image
+    if(!cardimage.writePNM("output_crop.pnm",errmsg)) return false;
+    
+    //wirte old image
     if(!pic.writePNM("output.pnm",errmsg)) return false;
     
     return true;

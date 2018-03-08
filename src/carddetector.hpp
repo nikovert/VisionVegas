@@ -19,6 +19,6 @@ public:
     Card playingcard;
     Carddetector(Card& ca) {playingcard = ca;}
     bool isolateCard(std::vector<Point2d> boundary_points);
-    bool mask();
+    //bool** mask(const Point2d &corner1, const Point2d &corner2, const Point2d &corner3, const Point2d &corner4);
 };
 #endif /* carddetector_h */
