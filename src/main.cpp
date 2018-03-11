@@ -14,8 +14,10 @@
 #include <cstdlib>
 
 #include <iostream>
+#include <fstream>
 #include <iomanip>
 #include <vector>
+
 
 
 void error(const char *fmt, ...)
@@ -28,49 +30,78 @@ void error(const char *fmt, ...)
     std::exit(-1);
 }
 
-void demo(void)
+std::string ReadNthLine(const std::string& filename, int N)
 {
-	Card card;
-	std::string errmsg;
-	if(!card.updateImage(errmsg)) error("%s\n",errmsg.c_str());
-
-	// create a copy of the loaded image
-	Image im;
-	card.cloneImageTo(im);
-
-	// detect boundary points of the card
-	std::vector<Point2d> boundary_points;
-	if(!card.detectCardBoundary(boundary_points)) error("unable to detect card boundary\n");
-	std::cout << boundary_points.size() << " boundary points\n";
-
-	// draw boundary points on the output image
-	for(std::vector<Point2d>::const_iterator it=boundary_points.begin();it!=boundary_points.end();++it)
-		im.drawMarker(*it, RGB(255,255,0),1);
+    std::ifstream in(filename.c_str());
     
-    Carddetector detector(card);
-    detector.isolateCard(boundary_points);
+    std::string s;
+    //for performance
+    s.reserve(105);
+    
+    //skip N lines
+    for(int i = 0; i < N; ++i)
+        std::getline(in, s);
+    
+    std::getline(in,s);
+    return s;
+}
+
+bool cardcheck(){
+    Card card;
+    std::string errmsg;
+    
+    //redirect cout
+    std::streambuf *psbuf, *backup;
+    std::ofstream filestr;
+    filestr.open ("cardcheck.txt");
+    
+    backup = std::cout.rdbuf();     // back up cout's streambuf
+    
+    psbuf = filestr.rdbuf();        // get file's streambuf
+    std::cout.rdbuf(psbuf);         // assign streambuf to cout
+    
+    std::cout << "Playingcard checks: " << "\n" << std::endl;
+    for(int i = 1; i < 105; i++){
+        std::string str = "../../card_images/";
+        std::string file = ReadNthLine("../../card_images/card_list.txt", i);
+        std::cout << "Reading File: " << file << std::endl;
+        str.append(file);
+        
+        card.readImage(errmsg, str);
+        
+        // create a copy of the loaded image
+        Image im;
+        card.cloneImageTo(im);
+        
+        Carddetector detector(card);
+        if(detector.isolateCard()){
+            detector.retrieveCrop(im);
+            
+            // get value of the card
+            std::cout << "Card value: " << card.getValue() << "\n";
+            
+            // write image to disk
+            std::string output = "output_"+file;
+            if(!im.writePNM(output,errmsg)) return false;
+        }
+        else
+            std::cout << "Card Failed: " << "\n";
+        
+        std::cout << "\n";
+    }
     
     
-	// get value of the card
-	std::cout << "Card value: " << card.getValue() << "\n";
-
-	// write image to disk
-	//if(!im.writePNM("output.pnm",errmsg)) error("%s\n",errmsg.c_str());
-
-	// display image using an external program
-	system("eog ./output.pnm");
+    
+    
+    std::cout.rdbuf(backup);        // restore cout's original streambuf
+    
+    filestr.close();
+    
+    return true;
 }
 
 int main(int, const char **)
 {
-    /*
-        Vector3d vec1(4,4,4);
-        Matrix3x3 mat1(1,0,0, 0,1,0, 0,0,1);
-        Matrix3x3 mat2(11,12,13, 21,22,23, 31,32,33);
-        Matrix3x3 mat3(1,1,1, 1,1,1, 1,1,1);
-        std::cout << mat2*mat2 <<std::endl;
-     */
-    
-	demo();
-	return 0;
+    cardcheck();
 }
+

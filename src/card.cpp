@@ -13,7 +13,15 @@ bool Card::updateImage(std::string& errmsg)
 	// uncomment when you want to use a new snapshot from the camera instead of using the same image over and over ...
 	// system("/home/ppsadm/FrameGrabber/requestframe.sh"); // image will be copied to ./frame.pnm
 	//return(im.readPNM("../captured.pnm",errmsg));
-	return(im.readPNM("../../card_images/ka.2.pnm",errmsg));
+	return(im.readPNM("../../card_images/k6.2.pnm",errmsg));
+}
+
+bool Card::readImage(std::string& errmsg, std::string& str)
+{
+    // uncomment when you want to use a new snapshot from the camera instead of using the same image over and over ...
+    // system("/home/ppsadm/FrameGrabber/requestframe.sh"); // image will be copied to ./frame.pnm
+    //return(im.readPNM("../captured.pnm",errmsg));
+    return(im.readPNM(str,errmsg));
 }
 
 bool Card::isBackground(const Point2d& point, uchar red_threshold) const
@@ -65,7 +73,7 @@ bool Card::detectCardBoundary(std::vector<Point2d>& boundary_points, double dist
 		// add point to the list of boundary points
 		point = Point2d(point.x + distance*cos(angle), point.y + distance*sin(angle));
 		boundary_points.push_back(point);
-		if(boundary_points.size()>max_points) return false;
+		if(boundary_points.size() > max_points) return false;
 
 	} while (boundary_points.size()<3 || seed_point.distance(point) > 1.1 * distance);
 
