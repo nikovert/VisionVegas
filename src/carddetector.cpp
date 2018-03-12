@@ -12,7 +12,6 @@ Point2d mintranslation(Vector3d corner1,Vector3d corner2,Vector3d corner3,Vector
 
 bool Carddetector::isolateCard()
 {
-    
     Image pic;
     playingcard.cloneImageTo(pic);
     
@@ -160,8 +159,10 @@ bool Carddetector::isolateCard()
         cardWidth = tmp;
     }
     //tmp, shouldn't be needed
-    //cardHeight = pic.height();
-    //cardWidth = pic.width();
+    if(debug){
+        cardHeight = pic.height();
+        cardWidth = pic.width();
+    }
     cardimage.create(cardWidth, cardHeight, RGB(0,0,0));
     
     std::cout << "cardWidth: " << cardWidth << " cardHeight: " << cardHeight << std::endl;
@@ -170,7 +171,13 @@ bool Carddetector::isolateCard()
             Point2d pixel(x0, y0);
             if(inRectangle(pixel, corner1, corner2, corner3, corner4)){ // only if the pixel is part of the card;
                 Vector3d pixel3d(x0,y0,1);
-                Vector3d newPixel = translationMatrix * centerTranslationMatrixBack * rotationMatrix * centerTranslationMatrix*pixel3d;
+                Vector3d newPixel;
+                
+                if(!debug)
+                    newPixel = translationMatrix * centerTranslationMatrixBack * rotationMatrix * centerTranslationMatrix * pixel3d;
+                else
+                    newPixel = pixel3d;
+                
                 if(newPixel.x >= cardimage.width() || newPixel.y >= cardimage.height()){
                     std::cout << "out of dimensions: " << newPixel.x << " " << newPixel.y << std::endl;
                     return false;

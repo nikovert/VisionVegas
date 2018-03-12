@@ -23,9 +23,11 @@ class Carddetector
 {
 private:
     Image crop;
+    bool debug;
 public:
     Card playingcard;
     Carddetector(Card& ca) {playingcard = ca;}
+    void setdebug() {debug = true;}
     bool isolateCard();
     void retrieveCrop(Image& im) {im = crop;}
 };

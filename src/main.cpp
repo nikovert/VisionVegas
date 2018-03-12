@@ -74,6 +74,7 @@ bool cardcheck(){
         card.cloneImageTo(im);
         
         Carddetector detector(card);
+        detector.setdebug();
         if(detector.isolateCard()){
             detector.retrieveCrop(im);
             
@@ -85,13 +86,10 @@ bool cardcheck(){
             if(!im.writePNM(output,errmsg)) return false;
         }
         else
-            std::cout << "Card Failed: " << "\n";
+            std::cout << "Card Failed " << "\n";
         
         std::cout << "\n";
     }
-    
-    
-    
     
     std::cout.rdbuf(backup);        // restore cout's original streambuf
     
