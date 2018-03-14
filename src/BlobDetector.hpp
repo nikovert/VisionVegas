@@ -36,8 +36,10 @@ public:
 public:
 	// Adds a Range of colors for thresholding
 	void AddRGBRange(RGB start, RGB end);
-	std::vector<BLOB> FindBlobs(Image im);
+	std::vector<BLOB> FindBlobs(Image& im);
 
+	// Debugging functions
+	void retrieveThresholded(Image& ret) {ret = thresholded;}
 
 
 private:

@@ -8,6 +8,7 @@
 #include <image.hpp>
 #include <card.hpp>
 #include <carddetector.hpp>
+#include <BlobDetector.hpp>
 
 #include <cstdio>
 #include <cstdarg>
@@ -106,8 +107,27 @@ bool cardcheck(){
     return true;
 }
 
+void thresholdtest()
+{
+	RGB darkred(0x99, 0, 0);
+	RGB lightred(0xff, 0x66, 0x66);
+	BlobDetector bdetector = BlobDetector();
+	bdetector.AddRGBRange(darkred, lightred);
+
+	std::string path = "../card_images/e2.1.pnm";
+	std::string wpath = "../thresholded.pnm";
+	std::string errorMessage;
+	Image im, th;
+	im.readPNM(path,errorMessage);
+	bdetector.FindBlobs(im);
+	bdetector.retrieveThresholded(th);
+	th.writePNM(wpath, errorMessage);
+
+}
+
+
 int main(int, const char **)
 {
-    cardcheck();
+    thresholdtest();
 }
 
