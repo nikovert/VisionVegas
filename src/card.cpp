@@ -47,7 +47,19 @@ bool Card::detectCardBoundary(std::vector<Point2d>& boundary_points, double dist
 	unsigned x0 = im.width()/2;
 	unsigned y0 = 0;
 	while(y0<im.height() && isBackground(Point2d(x0,y0), threshold)) y0++;
-	if(y0<=0 && y0>=im.height()-1) return false;
+    if(y0<=0 && y0>=im.height()-1){
+        //try alternative seed
+        x0 = im.width()/4;
+        y0 = 0;
+        while(y0<im.height() && isBackground(Point2d(x0,y0), threshold)) y0++;
+        if(y0<=0 && y0>=im.height()-1){
+            //try alternative seed
+            x0 = im.width()*3/4;
+            y0 = 0;
+            while(y0<im.height() && isBackground(Point2d(x0,y0), threshold)) y0++;
+            if(y0<=0 && y0>=im.height()-1) return false;
+        }
+    }
 	Point2d seed_point(x0,y0);
 	boundary_points.push_back(seed_point);
 

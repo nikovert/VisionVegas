@@ -37,7 +37,7 @@ public:
     void retrieveCrop(Image& im) {im = crop;}
     
     BlobDetector blob;
-    void initBlobdetection() {blob.adddefaultRange();};
-    void detectBlobs() {blob.findBlobs(crop); blob.retrieveThresholded(crop);}
+    void initBlobdetection() {blob.reset(); blob.adddefaultRange();};
+    void detectBlobs() {blob.findBlobs(crop); blob.retrieveBlobed(crop);}
 };
 #endif /* carddetector_h */

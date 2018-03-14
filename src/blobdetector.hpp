@@ -38,12 +38,14 @@ public:
 
 	// Debugging functions
 	void retrieveThresholded(Image& ret) {ret = thresholded;}
+    void retrieveBlobed(Image& ret) {ret = blobed;}
     void adddefaultRange() {addRGBRange(black, grey); addRGBRange(darkred, lightred);}
-
+    void reset() {original.destroy(); blobed.destroy(); thresholded.destroy();}
 private:
 	std::vector<RGB_RANGE> colorRanges;
 	void threshold();
-	Image original;
+	Image blobed;
+    Image original;
 	Image thresholded;
     
     //some  RGB colors

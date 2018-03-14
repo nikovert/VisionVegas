@@ -63,7 +63,6 @@ bool cardcheck(){
     std::cout << "Playingcard checks: " << "\n" << std::endl;
     
     for(int i = 1; i < 70; i++){
-        
         Carddetector detector(card);
         
         std::string str = "../../card_images/";
@@ -132,6 +131,5 @@ void thresholdtest()
 int main(int, const char **)
 {
     cardcheck();
-    thresholdtest();
 }
 

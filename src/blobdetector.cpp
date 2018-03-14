@@ -29,6 +29,8 @@ std::vector<BLOB> BlobDetector::findBlobs(Image& imb)
 {
 	original = imb;
 	threshold();
+    retrieveThresholded(blobed);
+    
     std::vector<BLOB> blobs;
 
     bool blob_continuation = false;
@@ -37,12 +39,12 @@ std::vector<BLOB> BlobDetector::findBlobs(Image& imb)
     Vector2d blobstart;
     Vector2d blobend;
     
-    int blobfield[original.width()][original.height()];
+    int blobfield[blobed.width()][blobed.height()];
     
     //blobdetection
     
-    for (unsigned x = 0; x < original.width(); x++) {
-        for (unsigned y = 0; y < original.height(); y++) {
+    for (unsigned x = 0; x < blobed.width(); x++) {
+        for (unsigned y = 0; y < blobed.height(); y++) {
             if (thresholded.at(x,y) == black){ //if pixel is in threshhold
                 if(blob_continuation)          //if we were just setting a blob, continue doing that
                     blobfield[x][y] = blobcount; // continuation of a blob
@@ -65,10 +67,29 @@ std::vector<BLOB> BlobDetector::findBlobs(Image& imb)
         }
     }
     
-    //TO DO: merging, blobs that are close and taking out blobs that are too small
-    
     std::cout << "maxblobcount: " << maxblobcount << std::endl;
-
+    unsigned mergethreshhold = 5;
+    //merging, blobs that are close and taking out blobs that are too small
+    for (unsigned x = 0; x < blobed.width(); x++) {
+        for (unsigned y = 0; y < blobed.height(); y++) {
+            for(unsigned i = 0; i < mergethreshhold; i++)
+                for(unsigned j = 0; j < mergethreshhold; j++)
+                    if(blobfield[x][y] > 0 && x+i < original.width() && y+j < original.height() && blobfield[x+i][y+j] > 0)
+                        blobfield[x+i][y+j] = blobfield[x][y];
+        }
+    }
+    
+    //draw blobs
+    for (unsigned x = 0; x < blobed.width(); x++) {
+        for (unsigned y = 0; y < blobed.height(); y++) {
+            if(blobfield[x][y] > 0){
+                blobed.drawMarker(x, y, RGB(0, 150, 0), 1);
+            }
+        }
+    }
+    
+    std::string errmsg;
+    //blobed.writePNM("blob.pnm",errmsg);
 	return blobs;
 }
 
@@ -91,6 +112,4 @@ void BlobDetector::threshold()
 			if (flag) thresholded.at(x,y) = black;
 		}
 	}
-
-
 }
