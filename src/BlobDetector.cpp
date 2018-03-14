@@ -44,7 +44,7 @@ void BlobDetector::Threshold()
 		for (unsigned y = 0; y < h; y++) {
 			bool flag = false;
 			RGB pixel = original.at(x,y);
-			for (std::vector<RGB_RANGE>::const_iterator range = colorRanges.begin(); range != colorRanges.end(); range++) {
+			for (std::vector<RGB_RANGE>::iterator range = colorRanges.begin(); range != colorRanges.end(); range++) {
 				if (range->begin <= pixel && pixel <= range->end) {
 					flag = true;
 					break;
