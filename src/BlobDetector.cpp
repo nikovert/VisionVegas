@@ -5,7 +5,7 @@
  *      Author: vgv_05fs18
  */
 
-#include <BlobDetector.h>
+#include <BlobDetector.hpp>
 
 const RGB white = RGB(255,255,255);
 const RGB black = RGB(0,0,0);
@@ -24,7 +24,7 @@ void BlobDetector::AddRGBRange(RGB start, RGB end)
 	colorRanges.push_back(RGB_RANGE(start,end));
 }
 
-std::vector<BLOB> BlobDetector::FindBlobs(Image im)
+std::vector<BLOB> BlobDetector::FindBlobs(Image& im)
 {
 	original = im;
 	Threshold();

@@ -117,12 +117,12 @@ bool Carddetector::isolateCard()
     double line2_angle = line2.angle();
     if(line2_angle < 0) line2_angle += 360.0;
     
-    double rotation_angle_error = abs(line4_angle - line2_angle)/2;
+    double rotation_angle_error = std::abs(line4_angle - line2_angle)/2;
     std::cout << "line4 angle: " << line4_angle << std::endl;
     std::cout << "line2 angle: " << line2_angle << std::endl;
     std::cout << "Rotation angle error: " << rotation_angle_error << std::endl;
-    if(rotation_angle_error > 175.0) rotation_angle_error = abs(rotation_angle_error-180);
-    if(abs(rotation_angle_error) > 5.0){
+    if(rotation_angle_error > 175.0) rotation_angle_error = std::abs(rotation_angle_error-180);
+    if(std::abs(rotation_angle_error) > 5.0){
         std::cout << "Angles don't match!" << std::endl;
         return false;
     }
