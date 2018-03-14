@@ -90,4 +90,6 @@ public: // file input/output
 	bool writePNM(const std::string& filename, std::string& errmsg) const;
 };
 
+bool operator==(RGB& col1, RGB& col2);
+
 #endif

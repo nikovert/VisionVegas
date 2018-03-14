@@ -8,7 +8,6 @@
 #include <image.hpp>
 #include <card.hpp>
 #include <carddetector.hpp>
-#include <blobdetector.hpp>
 
 #include <cstdio>
 #include <cstdarg>
@@ -80,7 +79,11 @@ bool cardcheck(){
         Image im;
         card.cloneImageTo(im);
         //detector.setdebug();
+        detector.initBlobdetection();
+        
         if(detector.isolateCard()){
+            
+            detector.detectBlobs();
             detector.retrieveCrop(im);
             
             // get value of the card
@@ -112,14 +115,15 @@ void thresholdtest()
 	RGB darkred(0x99, 0, 0);
 	RGB lightred(0xff, 0x66, 0x66);
 	BlobDetector bdetector = BlobDetector();
-	bdetector.AddRGBRange(darkred, lightred);
+	bdetector.addRGBRange(darkred, lightred);
 
-	std::string path = "5_output_e3.1";
+	std::string path = "/Users/nikovertovec/Documents/VisionVegas/card_images/e2.2.pnm";
 	std::string wpath = "thresholded.pnm";
 	std::string errorMessage;
-	Image im, th;
-	im.readPNM(path,errorMessage);
-	bdetector.FindBlobs(im);
+    
+	Image imag, th;
+	imag.readPNM(path,errorMessage);
+	bdetector.findBlobs(imag);
 	bdetector.retrieveThresholded(th);
 	th.writePNM(wpath, errorMessage);
 }

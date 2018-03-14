@@ -19,6 +19,14 @@ std::ostream& operator<<(std::ostream& os, const RGB& color)
 	return(os);
 }
 
+bool operator==(RGB& col1, RGB& col2)
+{
+    if(col1.r == col2.r && col1.g == col2.g && col1.b == col2.b)
+        return true;
+    else
+        return false;
+}
+
 Image::Image() : m_data(0), m_width(0), m_height(0)
 {
 
