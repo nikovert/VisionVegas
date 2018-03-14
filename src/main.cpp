@@ -8,7 +8,7 @@
 #include <image.hpp>
 #include <card.hpp>
 #include <carddetector.hpp>
-#include <BlobDetector.hpp>
+#include <blobdetector.hpp>
 
 #include <cstdio>
 #include <cstdarg>
@@ -63,7 +63,7 @@ bool cardcheck(){
     
     std::cout << "Playingcard checks: " << "\n" << std::endl;
     
-    for(int i = 1; i < 105; i++){
+    for(int i = 1; i < 70; i++){
         
         Carddetector detector(card);
         
@@ -114,20 +114,20 @@ void thresholdtest()
 	BlobDetector bdetector = BlobDetector();
 	bdetector.AddRGBRange(darkred, lightred);
 
-	std::string path = "../card_images/e2.1.pnm";
-	std::string wpath = "../thresholded.pnm";
+	std::string path = "5_output_e3.1";
+	std::string wpath = "thresholded.pnm";
 	std::string errorMessage;
 	Image im, th;
 	im.readPNM(path,errorMessage);
 	bdetector.FindBlobs(im);
 	bdetector.retrieveThresholded(th);
 	th.writePNM(wpath, errorMessage);
-
 }
 
 
 int main(int, const char **)
 {
+    cardcheck();
     thresholdtest();
 }
 

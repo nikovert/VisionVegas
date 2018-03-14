@@ -5,14 +5,13 @@
  *      Author: vgv_05fs18
  */
 
-#include <BlobDetector.hpp>
+#include <blobdetector.hpp>
 
 const RGB white = RGB(255,255,255);
 const RGB black = RGB(0,0,0);
 
 BlobDetector::BlobDetector() {
 	// TODO Auto-generated constructor stub
-
 }
 
 BlobDetector::~BlobDetector() {
