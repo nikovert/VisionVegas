@@ -17,32 +17,32 @@ bool Carddetector::isolateCard()
     
     //______________detect corners__________________________________________________________________
     // detect boundary points of the card
-    std::vector<Point2d> boundary_points;
-    if(!playingcard.detectCardBoundary(boundary_points)) return false;
-    //std::cout << boundary_points.size() << " boundary points\n";
+        std::vector<Point2d> boundary_points;
+        if(!playingcard.detectCardBoundary(boundary_points)) return false;
+        //std::cout << boundary_points.size() << " boundary points\n";
     
     // find consecutive collinear points and fit a line to them
-    std::vector<Point2d>::const_iterator it=boundary_points.begin();
-    //Line 1
-    while(!collinear(*it,*(it+2),*(it+4),2)) ++it;
-    Line2d line1(*it,*(it+4));
-    // find the next point not on the line
-    while (line1.distance(*it) < 20) ++it;
+        std::vector<Point2d>::const_iterator it=boundary_points.begin();
     
-    // find the next consecutive set of collinear points and fit another line to them
+    //Line 1
+        while(!collinear(*it,*(it+2),*(it+4),2)) ++it;
+        Line2d line1(*it,*(it+4));
+        // find the next point not on the line
+        while (line1.distance(*it) < 20) ++it;
+    
     //Line 2
-    while(!collinear(*it,*(it+2),*(it+4),2)) ++it;
-    Line2d line2(*it,*(it+4));
-    while (line2.distance(*it) < 20) ++it;
+        while(!collinear(*it,*(it+2),*(it+4),2)) ++it;
+        Line2d line2(*it,*(it+4));
+        while (line2.distance(*it) < 20) ++it;
     
     //Line 3
-    while(!collinear(*it,*(it+2),*(it+4),2)) ++it;
-    Line2d line3(*it,*(it+4));
-    while (line3.distance(*it) < 20) ++it;
+        while(!collinear(*it,*(it+2),*(it+4),2)) ++it;
+        Line2d line3(*it,*(it+4));
+        while (line3.distance(*it) < 20) ++it;
     
     // //Line 4
-    while(!collinear(*it,*(it+2),*(it+4),2)) ++it;
-    Line2d line4(*it,*(it+4));
+        while(!collinear(*it,*(it+2),*(it+4),2)) ++it;
+        Line2d line4(*it,*(it+4));
     
     /*
     // draw lines
@@ -65,63 +65,73 @@ bool Carddetector::isolateCard()
      */
     
     //find intersections
-    line1.intersect(line4, tmpcorner1);
-    line1.intersect(line2, tmpcorner2);
-    line2.intersect(line3, tmpcorner3);
-    line4.intersect(line3, tmpcorner4);
+        line1.intersect(line4, tmpcorner1);
+        line1.intersect(line2, tmpcorner2);
+        line2.intersect(line3, tmpcorner3);
+        line4.intersect(line3, tmpcorner4);
     
-    if(tmpcorner1.x < tmpcorner2.x){
-        corner1 = tmpcorner1;
-        corner2 = tmpcorner2;
-        corner3 = tmpcorner3;
-        corner4 = tmpcorner4;
-    }
-    else{
-        corner1 = tmpcorner2;
-        corner2 = tmpcorner1;
-        corner3 = tmpcorner4;
-        corner4 = tmpcorner3;
-    }
+    //swap definition of corners as necessary
+        if(tmpcorner1.x < tmpcorner2.x){
+            corner1 = tmpcorner1;
+            corner2 = tmpcorner2;
+            corner3 = tmpcorner3;
+            corner4 = tmpcorner4;
+        }
+        else{
+            corner1 = tmpcorner2;
+            corner2 = tmpcorner1;
+            corner3 = tmpcorner4;
+            corner4 = tmpcorner3;
+        }
     
     Line2d top(corner1, corner2), bottom(corner4, corner3), left(corner1, corner4), right(corner2, corner3);
-    /*
-    //Mark card corners
-    pic.drawMarker(corner1, RGB(255,255,0), 2);
-    pic.drawMarker(corner2, RGB(255,0,0), 2);
-    pic.drawMarker(corner3, RGB(255,0,0), 2);
-    pic.drawMarker(corner4, RGB(255,0,255), 2);
-    
-    //Mark card boundaries
-    pic.drawLine(top, RGB(255,125,125));
-    pic.drawLine(bottom, RGB(255,125,125));
-    pic.drawLine(left, RGB(255,125,125));
-    pic.drawLine(right, RGB(255,125,125));
-     */
+        /*
+        //Mark card corners
+        pic.drawMarker(corner1, RGB(255,255,0), 2);
+        pic.drawMarker(corner2, RGB(255,0,0), 2);
+        pic.drawMarker(corner3, RGB(255,0,0), 2);
+        pic.drawMarker(corner4, RGB(255,0,255), 2);
+        
+        //Mark card boundaries
+        pic.drawLine(top, RGB(255,125,125));
+        pic.drawLine(bottom, RGB(255,125,125));
+        pic.drawLine(left, RGB(255,125,125));
+        pic.drawLine(right, RGB(255,125,125));
+         */
     
     //Get dimesnions of the card
-    unsigned cardHeight, cardWidth;
-    if(top.length() > bottom.length())
-        cardWidth = (unsigned) top.length() + 1;
-    else
-        cardWidth = (unsigned) bottom.length() + 1;
-    if(left.length() > right.length())
-        cardHeight = (unsigned) left.length() + 1;
-    else
-        cardHeight = (unsigned) right.length() + 1;
+        unsigned cardHeight, cardWidth;
+        if(top.length() > bottom.length())
+            cardWidth = (unsigned) (top.length() + 1);
+        else
+            cardWidth = (unsigned) (bottom.length() + 1);
+        if(left.length() > right.length())
+            cardHeight = (unsigned) (left.length() + 1);
+        else
+            cardHeight = (unsigned) (right.length() + 1);
     
     //______________determine rotation matrix__________________________________________________________________
     //calculate the rotation angle
-    double rotation_angle_error = (line4.angle()-180 - line2.angle())/2;
-    if(rotation_angle_error > 5){
-        std::cerr << "Angles don't match!" << std::endl;
+    double line4_angle = line4.angle() - 180.0; //-180. because the line shows in the other direction
+    if(line4_angle < 0) line4_angle += 360.0;
+    double line2_angle = line2.angle();
+    if(line2_angle < 0) line2_angle += 360.0;
+    
+    double rotation_angle_error = abs(line4_angle - line2_angle)/2;
+    std::cout << "line4 angle: " << line4_angle << std::endl;
+    std::cout << "line2 angle: " << line2_angle << std::endl;
+    std::cout << "Rotation angle error: " << rotation_angle_error << std::endl;
+    if(rotation_angle_error > 175.0) rotation_angle_error = abs(rotation_angle_error-180);
+    if(abs(rotation_angle_error) > 5.0){
+        std::cout << "Angles don't match!" << std::endl;
         return false;
     }
     
     //determine if we have to flip by 90 degrees.
     bool flip = top > left;
     
-    double rotation_angle = (line2.angle() + rotation_angle_error/2);
-    if(!flip) rotation_angle += 90;
+    double rotation_angle = (line2_angle + line4_angle)/2;
+    if(flip) rotation_angle += 90;
     std::cout << "flip: " << flip << std::endl;
     std::cout << "rotate by " << rotation_angle << std::endl;
     

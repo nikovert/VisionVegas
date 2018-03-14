@@ -74,15 +74,19 @@ bool cardcheck(){
         card.cloneImageTo(im);
         
         Carddetector detector(card);
-        detector.setdebug();
+        //detector.setdebug();
         if(detector.isolateCard()){
             detector.retrieveCrop(im);
             
             // get value of the card
             std::cout << "Card value: " << card.getValue() << "\n";
             
+            std::string output;
             // write image to disk
-            std::string output = "output_"+file;
+            if(detector.isdebug())
+                output = "output_debug_"+file;
+            else
+                output = "output_"+file;
             if(!im.writePNM(output,errmsg)) return false;
         }
         else

@@ -26,8 +26,9 @@ private:
     bool debug;
 public:
     Card playingcard;
-    Carddetector(Card& ca) {playingcard = ca;}
+    Carddetector(Card& ca) {playingcard = ca; debug = false;}
     void setdebug() {debug = true;}
+    bool isdebug() {return debug;}
     bool isolateCard();
     void retrieveCrop(Image& im) {im = crop;}
 };

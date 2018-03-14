@@ -79,7 +79,7 @@ double Line2d::angle(void) const
 {
     //returns the angle of a line in degrees
     Point2d p = p2 - p1;
-    return atan2(p.x, p.y)*180/PI;
+    return atan2(p.x, p.y) * 180/PI;
 }
 
 double Line2d::length(void) const
