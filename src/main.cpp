@@ -61,10 +61,16 @@ bool cardcheck(){
     std::cout.rdbuf(psbuf);         // assign streambuf to cout
     
     std::cout << "Playingcard checks: " << "\n" << std::endl;
+    
     for(int i = 1; i < 105; i++){
+        
+        Carddetector detector(card);
+        
         std::string str = "../../card_images/";
         std::string file = ReadNthLine("../../card_images/card_list.txt", i);
         std::cout << "Reading File: " << file << std::endl;
+        
+        detector.currentCard = file;
         str.append(file);
         
         card.readImage(errmsg, str);
@@ -72,8 +78,6 @@ bool cardcheck(){
         // create a copy of the loaded image
         Image im;
         card.cloneImageTo(im);
-        
-        Carddetector detector(card);
         //detector.setdebug();
         if(detector.isolateCard()){
             detector.retrieveCrop(im);
@@ -84,9 +88,9 @@ bool cardcheck(){
             std::string output;
             // write image to disk
             if(detector.isdebug())
-                output = "output_debug_"+file;
+                output = std::to_string(i) + "_output_debug_" + file;
             else
-                output = "output_"+file;
+                output = std::to_string(i) + "_output_" + file;
             if(!im.writePNM(output,errmsg)) return false;
         }
         else

@@ -25,6 +25,7 @@ private:
     Image crop;
     bool debug;
 public:
+    std::string currentCard;
     Card playingcard;
     Carddetector(Card& ca) {playingcard = ca; debug = false;}
     void setdebug() {debug = true;}

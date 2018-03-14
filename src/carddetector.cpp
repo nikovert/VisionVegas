@@ -117,12 +117,12 @@ bool Carddetector::isolateCard()
     double line2_angle = line2.angle();
     if(line2_angle < 0) line2_angle += 360.0;
     
-    double rotation_angle_error = abs(line4_angle - line2_angle)/2;
+    double rotation_angle_error = std::abs(line4_angle - line2_angle)/2;
     std::cout << "line4 angle: " << line4_angle << std::endl;
     std::cout << "line2 angle: " << line2_angle << std::endl;
     std::cout << "Rotation angle error: " << rotation_angle_error << std::endl;
-    if(rotation_angle_error > 175.0) rotation_angle_error = abs(rotation_angle_error-180);
-    if(abs(rotation_angle_error) > 5.0){
+    if(rotation_angle_error > 175.0) rotation_angle_error = std::abs(rotation_angle_error-180);
+    if(std::abs(rotation_angle_error) > 5.0){
         std::cout << "Angles don't match!" << std::endl;
         return false;
     }
@@ -169,20 +169,23 @@ bool Carddetector::isolateCard()
         cardWidth = tmp;
     }
     //tmp, shouldn't be needed
-    if(debug){
-        cardHeight = pic.height();
-        cardWidth = pic.width();
+    
+    bool noShrink = true;
+    
+    if(debug || noShrink){
+        cardHeight = 370;
+        cardWidth = 250;
     }
-    cardimage.create(cardWidth, cardHeight, RGB(0,0,0));
+    cardimage.create(cardWidth, cardHeight, RGB(255,255,255));
     
     std::cout << "cardWidth: " << cardWidth << " cardHeight: " << cardHeight << std::endl;
+    std::cerr << "writing Card: " << currentCard;
     for(unsigned x0 = 1; x0 < pic.width(); x0++){
         for(unsigned y0 = 1; y0 < pic.height(); y0++){
             Point2d pixel(x0, y0);
             if(inRectangle(pixel, corner1, corner2, corner3, corner4)){ // only if the pixel is part of the card;
                 Vector3d pixel3d(x0,y0,1);
                 Vector3d newPixel;
-                
                 if(!debug)
                     newPixel = translationMatrix * centerTranslationMatrixBack * rotationMatrix * centerTranslationMatrix * pixel3d;
                 else
@@ -190,6 +193,7 @@ bool Carddetector::isolateCard()
                 
                 if(newPixel.x >= cardimage.width() || newPixel.y >= cardimage.height()){
                     std::cout << "out of dimensions: " << newPixel.x << " " << newPixel.y << std::endl;
+                    std::cerr << std::endl;
                     return false;
                 }
                 cardimage.at(newPixel.x, newPixel.y) = pic.at(x0, y0);
@@ -198,6 +202,7 @@ bool Carddetector::isolateCard()
     }
     std::string errmsg;
     crop = cardimage;
+    std::cerr << " ... success!" << std::endl;
     return true;
 }
 
