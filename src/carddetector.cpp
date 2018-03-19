@@ -290,8 +290,8 @@ bool Carddetector::maskCard()
         }
     }
     std::string errmsg;
-    crop = maskimage;
-    //crop = cropedcard;
+    //crop = maskimage;
+    crop = cropedcard;
     std::cerr << " ... success!" << std::endl;
     return true;
 }

@@ -13,12 +13,13 @@ std::ostream& operator<<(std::ostream& os, const Weights& w)
     return(os);
 }
 
-bool Perceptron::eval(RGB& pixel)
+bool Perceptron::eval(const RGB& pixel) const
 {
-    return (w.weight0 + w.weightR*pixel.r + w.weightG*pixel.g + w.weightB*pixel.b > 0);
+    //std::cout << w.weight0 + w.weightR * pixel.r + w.weightG * pixel.g + w.weightB * pixel.b << std::endl;
+    return (w.weight0 + w.weightR * pixel.r + w.weightG * pixel.g + w.weightB * pixel.b > 0);
 }
 
-bool Perceptron::saveWeights(std::string& location)
+bool Perceptron::saveWeights(std::string location)
 {
     std::ofstream Weightfile;
     Weightfile.open(location);
@@ -34,14 +35,14 @@ bool Perceptron::saveWeights(std::string& location)
     return true;
 }
 
-Weights Perceptron::readWeights(std::string& location)
+Weights Perceptron::readWeights(std::string location)
 {
     Weights w;
     std::ifstream in(location.c_str());
     
     std::string str;
     //for performance
-    str.reserve(105);
+    str.reserve(30);
     
     //skip N lines
     for(int i = 0; i < 1; ++i)
@@ -74,7 +75,8 @@ void Perceptron::setW(Weights weight)
 
 Weights Perceptron::learn(RGB& pixel, bool target)
 {
-    bool y = eval(pixel);
+    //std::cout << target <<std::endl;
+    bool y = eval(pixel); //is backround
     w.weight0 += (target-y) * 1;
     w.weightR += (target-y) * pixel.r;
     w.weightG += (target-y) * pixel.g;
@@ -109,32 +111,34 @@ Weights Perceptron::train()
     
     std::cout << "Training Perceptron... " << "\n" << std::endl;
     
-    
-    for(int i = 0; i < 102; i++){
-        //Load new Image and Mask
-        std::string fileOriginal = ReadNthLinefromFile("../../trainingdata/training_list.txt", i);
-        std::string fileMask = ReadNthLinefromFile("../../trainingdata/training_list.txt", i+1);
-        std::cout << "Reading File: " << fileOriginal << " with Mask: " << fileMask << std::endl;
-        
-        std::string location = "../../trainingdata/";
-        location.append(fileOriginal);
-        im.readPNM(location,errmsg);
-        
-        location = "../../trainingdata/";
-        location.append(fileOriginal);
-        mask.readPNM(location,errmsg);
-        
-        //Train each pixel
-        if(mask.pixels() != im.pixels()){
-            std::cerr << "Image dimensions don't match" << std::endl;
-            continue;
-        }
-        
-        for(unsigned x0 = 1; x0 < im.width(); x0++){
-            for(unsigned y0 = 1; y0 < im.height(); y0++){
-                w = learn(im.at(x0, y0), (mask.at(x0, y0)  == RGB(255, 255, 255)));
+    for(int j = 0; j < 100; j++){
+        for(int i = 0; i < 102; i += 2){
+            //Load new Image and Mask
+            std::string fileMask = ReadNthLinefromFile("../../trainingdata/training_list.txt", i);
+            std::string fileOriginal = ReadNthLinefromFile("../../trainingdata/training_list.txt", i+1);
+            //std::cout << "Reading File: " << fileOriginal << " with Mask: " << fileMask << std::endl;
+            
+            std::string location = "../../trainingdata/";
+            location.append(fileOriginal);
+            im.readPNM(location,errmsg);
+            
+            location = "../../trainingdata/";
+            location.append(fileOriginal);
+            mask.readPNM(location,errmsg);
+            
+            //Train each pixel
+            if(mask.pixels() != im.pixels()){
+                std::cerr << "Image dimensions don't match" << std::endl;
+                continue;
+            }
+            
+            for(unsigned x0 = 1; x0 < im.width(); x0++){
+                for(unsigned y0 = 1; y0 < im.height(); y0++){
+                    w = learn(im.at(x0, y0), (mask.at(x0, y0) < RGB(50, 50, 50)));
+                }
             }
         }
+        std::cout << "Weights: " << w << " \t Iteration: " << j << std::endl;
     }
     return w;
 }

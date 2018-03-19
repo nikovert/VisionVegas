@@ -10,7 +10,6 @@
 
 #include <stdio.h>
 #include <image.hpp>
-#include <card.hpp>
 
 #include <fstream>
 
@@ -30,15 +29,14 @@ class Perceptron
 private:
     Weights w;
 public:
-    Perceptron(Weights weight) {w = weight;};
     Perceptron() {w = Weights();};
-    bool eval(RGB& pixel); //returns if the pixel is card(false) or Backround(true)
+    bool eval(const RGB& pixel) const; //returns if the pixel is card(false) or Backround(true)
     Weights getW();
     void setW(Weights weight);
     Weights learn(RGB& pixel, bool target); //updates the weights
     Weights train(); //requires the learning database
-    bool saveWeights(std::string& location); //write Weights to txt file;
-    Weights readWeights(std::string& location); //read Weights from txt file
+    bool saveWeights(std::string location); //write Weights to txt file;
+    Weights readWeights(std::string location); //read Weights from txt file
 };
 
 #endif /* perceptron_hpp */

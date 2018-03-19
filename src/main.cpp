@@ -49,6 +49,7 @@ std::string ReadNthLine(const std::string& filename, int N)
 
 bool cardcheck(){
     Card card;
+    card.loadPerceptron();
     std::string errmsg;
     
     //redirect cout
@@ -114,11 +115,12 @@ bool cardcheck(){
 //helps with the learning data generations, not automatic
 bool generateLearningData(){
     Card card;
+    card.loadPerceptron();
     std::string errmsg;
     
     std::cout << "Playingcard checks: " << "\n" << std::endl;
     
-    for(int i = 80; i < 100; i++){
+    for(int i = 1; i < 100; i++){
         Carddetector detector(card);
         
         std::string str = "../../card_images/";
@@ -173,13 +175,23 @@ void thresholdtest()
 	th.writePNM(wpath, errorMessage);
 }
 
+void train(){
+    Perceptron p;
+    p.setW(p.readWeights("weight.txt"));
+    
+    Weights w = p.getW();
+    std::cout << std::endl;
+    std::cout << "old weights: " <<  w << std::endl;
+    
+    w = p.train();
+    p.setW(w);
+    p.saveWeights("weight.txt");
+}
+
 
 int main(int, const char **)
 {
-    Perceptron p;
-    Weights w = p.train();
-    std::cout << std::endl;
-    std::cout << w; //first result: (-311 261 -885 1060)
-    
+    train();
+    generateLearningData();
 }
 
