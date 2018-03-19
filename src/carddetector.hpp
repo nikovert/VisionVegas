@@ -26,6 +26,8 @@ class Carddetector
 {
 private:
     Image crop;
+    BinaryImage binmask;
+    Image mask;
     bool debug;
 public:
     std::string currentCard;
@@ -34,6 +36,7 @@ public:
     void setdebug() {debug = true;}
     bool isdebug() {return debug;}
     bool isolateCard();
+    bool maskCard();
     void retrieveCrop(Image& im) {im = crop;}
     
     BlobDetector blob;
