@@ -373,6 +373,8 @@ void blackrecognitiontest()
 	std::cout << "Should be: 10"<< std::endl;
 	std::cout << "Is:" << b1e.size() << ',' << b2e.size() << ',' << b1h.size() << ',' << b2h.size() << std::endl;
 
+}
+
 void train(){
     Perceptron p;
     p.setW(p.readWeights("weight.txt"));
@@ -389,8 +391,6 @@ void train(){
 
 int main(int, const char **)
 {
-    //train();
-    //generateLearningData();
-    cardcheck();
+	redrecognitiontest();
 }
 
