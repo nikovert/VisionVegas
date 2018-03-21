@@ -26,13 +26,28 @@ bool Card::readImage(std::string& errmsg, std::string& str)
 
 bool Card::isBackground(const Point2d& point, uchar red_threshold) const
 {
-	if(!im.isAllocated()) return false;
-	int x = point.X();
-	int y = point.Y();
-	if (x>=0 && x<int(im.width()) && y>=0 && y<int(im.height()))
-		return(im.at(x,y).r < red_threshold);
+    if(usingPerceptron)
+        return isBackground(point);
+    else{
+        if(!im.isAllocated()) return false;
+        int x = point.X();
+        int y = point.Y();
+        if (x>=0 && x<int(im.width()) && y>=0 && y<int(im.height()))
+            return(im.at(x,y).r < red_threshold);
+        else
+            return true;
+    }
+}
 
-	else return true;
+bool Card::isBackground(const Point2d& point) const
+{
+    if(!im.isAllocated()) return false;
+    int x = point.X();
+    int y = point.Y();
+    if (x>=0 && x<int(im.width()) && y>=0 && y<int(im.height()))
+        return(percep.eval(im.at(x,y)));
+    else
+        return true;
 }
 
 bool Card::detectCardBoundary(std::vector<Point2d>& boundary_points, double distance, uchar threshold, double delta_angle, unsigned max_points)
@@ -47,7 +62,19 @@ bool Card::detectCardBoundary(std::vector<Point2d>& boundary_points, double dist
 	unsigned x0 = im.width()/2;
 	unsigned y0 = 0;
 	while(y0<im.height() && isBackground(Point2d(x0,y0), threshold)) y0++;
-	if(y0<=0 && y0>=im.height()-1) return false;
+    if(y0<=0 && y0>=im.height()-1){
+        //try alternative seed
+        x0 = im.width()/4;
+        y0 = 0;
+        while(y0<im.height() && isBackground(Point2d(x0,y0), threshold)) y0++;
+        if(y0<=0 && y0>=im.height()-1){
+            //try alternative seed
+            x0 = im.width()*3/4;
+            y0 = 0;
+            while(y0<im.height() && isBackground(Point2d(x0,y0), threshold)) y0++;
+            if(y0<=0 && y0>=im.height()-1) return false;
+        }
+    }
 	Point2d seed_point(x0,y0);
 	boundary_points.push_back(seed_point);
 
@@ -78,6 +105,15 @@ bool Card::detectCardBoundary(std::vector<Point2d>& boundary_points, double dist
 	} while (boundary_points.size()<3 || seed_point.distance(point) > 1.1 * distance);
 
 	return true;
+}
+
+bool Card::loadPerceptron()
+{
+    percep.setW(percep.readWeights("weight.txt"));
+    if(percep.getW().weight0 == 0) return false;
+    usingPerceptron = true;
+    std::cout << "Using weights: " << percep.getW() << std::endl;
+    return true;
 }
 
 int Card::getValue(void)

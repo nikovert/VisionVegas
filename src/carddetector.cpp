@@ -206,6 +206,96 @@ bool Carddetector::isolateCard()
     return true;
 }
 
+//only creates a mask, needed to create training data
+//overwrites crop
+bool Carddetector::maskCard()
+{
+    Image pic;
+    playingcard.cloneImageTo(pic);
+    
+    //______________detect corners__________________________________________________________________
+    // detect boundary points of the card
+    std::vector<Point2d> boundary_points;
+    if(!playingcard.detectCardBoundary(boundary_points)) return false;
+    //std::cout << boundary_points.size() << " boundary points\n";
+    
+    // find consecutive collinear points and fit a line to them
+    std::vector<Point2d>::const_iterator it=boundary_points.begin();
+    
+    //Line 1
+    while(!collinear(*it,*(it+2),*(it+4),2)) ++it;
+    Line2d line1(*it,*(it+4));
+    // find the next point not on the line
+    while (line1.distance(*it) < 20) ++it;
+    
+    //Line 2
+    while(!collinear(*it,*(it+2),*(it+4),2)) ++it;
+    Line2d line2(*it,*(it+4));
+    while (line2.distance(*it) < 20) ++it;
+    
+    //Line 3
+    while(!collinear(*it,*(it+2),*(it+4),2)) ++it;
+    Line2d line3(*it,*(it+4));
+    while (line3.distance(*it) < 20) ++it;
+    
+    // //Line 4
+    while(!collinear(*it,*(it+2),*(it+4),2)) ++it;
+    Line2d line4(*it,*(it+4));
+    
+    Point2d corner1, corner2, corner3, corner4;
+    Point2d tmpcorner1, tmpcorner2, tmpcorner3, tmpcorner4;
+    
+    //find intersections
+    line1.intersect(line4, tmpcorner1);
+    line1.intersect(line2, tmpcorner2);
+    line2.intersect(line3, tmpcorner3);
+    line4.intersect(line3, tmpcorner4);
+    
+    //swap definition of corners as necessary
+    if(tmpcorner1.x < tmpcorner2.x){
+        corner1 = tmpcorner1;
+        corner2 = tmpcorner2;
+        corner3 = tmpcorner3;
+        corner4 = tmpcorner4;
+    }
+    else{
+        corner1 = tmpcorner2;
+        corner2 = tmpcorner1;
+        corner3 = tmpcorner4;
+        corner4 = tmpcorner3;
+    }
+    
+    Line2d top(corner1, corner2), bottom(corner4, corner3), left(corner1, corner4), right(corner2, corner3);
+    
+    //Get dimesnions of the card
+    unsigned cardHeight, cardWidth;
+    if(top.length() > bottom.length())
+        cardWidth = (unsigned) (top.length() + 1);
+    else
+        cardWidth = (unsigned) (bottom.length() + 1);
+    if(left.length() > right.length())
+        cardHeight = (unsigned) (left.length() + 1);
+    else
+        cardHeight = (unsigned) (right.length() + 1);
+    
+    Image cropedcard(pic.width(), pic.height());
+    BinaryImage maskimage(pic.width(), pic.height());
+    for(unsigned x0 = 1; x0 < pic.width(); x0++){
+        for(unsigned y0 = 1; y0 < pic.height(); y0++){
+            Point2d pixel(x0, y0);
+            if(inRectangle(pixel, corner1, corner2, corner3, corner4)){ // only if the pixel is part of the card;
+                maskimage.setPixel(x0, y0, true);
+                cropedcard.at(x0, y0) = pic.at(x0, y0);
+            }
+        }
+    }
+    std::string errmsg;
+    //crop = maskimage;
+    crop = cropedcard;
+    std::cerr << " ... success!" << std::endl;
+    return true;
+}
+
 Point2d mintranslation(Vector3d corner1,Vector3d corner2,Vector3d corner3,Vector3d corner4){
     //x
     double xtrans;

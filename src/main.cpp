@@ -8,7 +8,6 @@
 #include <image.hpp>
 #include <card.hpp>
 #include <carddetector.hpp>
-#include <BlobDetector.hpp>
 
 #include <cstdio>
 #include <cstdarg>
@@ -18,6 +17,7 @@
 #include <fstream>
 #include <iomanip>
 #include <vector>
+#include <perceptron.hpp>
 
 
 
@@ -49,6 +49,7 @@ std::string ReadNthLine(const std::string& filename, int N)
 
 bool cardcheck(){
     Card card;
+    card.loadPerceptron();
     std::string errmsg;
     
     //redirect cout
@@ -63,24 +64,28 @@ bool cardcheck(){
     
     std::cout << "Playingcard checks: " << "\n" << std::endl;
     
-    for(int i = 1; i < 105; i++){
-        
-        Carddetector detector(card);
+    for(int i = 1; i < 70; i++){
         
         std::string str = "../../card_images/";
         std::string file = ReadNthLine("../../card_images/card_list.txt", i);
         std::cout << "Reading File: " << file << std::endl;
         
-        detector.currentCard = file;
         str.append(file);
-        
         card.readImage(errmsg, str);
+        
+        Carddetector detector(card);
+        
+        detector.currentCard = file;
         
         // create a copy of the loaded image
         Image im;
         card.cloneImageTo(im);
         //detector.setdebug();
+        detector.initBlobdetection();
+        
         if(detector.isolateCard()){
+            
+            detector.detectBlobs();
             detector.retrieveCrop(im);
             
             // get value of the card
@@ -107,27 +112,86 @@ bool cardcheck(){
     return true;
 }
 
+//helps with the learning data generations, not automatic
+bool generateLearningData(){
+    Card card;
+    card.loadPerceptron();
+    std::string errmsg;
+    
+    std::cout << "Playingcard checks: " << "\n" << std::endl;
+    
+    for(int i = 1; i < 100; i++){
+        Carddetector detector(card);
+        
+        std::string str = "../../card_images/";
+        std::string file = ReadNthLine("../../card_images/card_list.txt", i);
+        std::cout << "Reading File: " << file << std::endl;
+        
+        detector.currentCard = file;
+        str.append(file);
+        
+        card.readImage(errmsg, str);
+        
+        // create a copy of the loaded image
+        Image im;
+        card.cloneImageTo(im);
+        //detector.setdebug();
+        detector.initBlobdetection();
+        
+        if(detector.maskCard()){
+            detector.retrieveCrop(im);
+            
+            std::string output;
+            // write image to disk
+            if(detector.isdebug())
+                output = std::to_string(i) + "_output_debug_" + file;
+            else
+                output = std::to_string(i) + "_output_" + file;
+            if(!im.writePNM(output,errmsg)) return false;
+        }
+        else
+            std::cout << "Card Failed " << "\n";
+        
+        std::cout << "\n";
+    }
+    return true;
+}
+
 void thresholdtest()
 {
 	RGB darkred(0x99, 0, 0);
 	RGB lightred(0xff, 0x66, 0x66);
 	BlobDetector bdetector = BlobDetector();
-	bdetector.AddRGBRange(darkred, lightred);
+	bdetector.addRGBRange(darkred, lightred);
 
-	std::string path = "../card_images/e2.1.pnm";
-	std::string wpath = "../thresholded.pnm";
+	std::string path = "/Users/nikovertovec/Documents/VisionVegas/card_images/e2.2.pnm";
+	std::string wpath = "thresholded.pnm";
 	std::string errorMessage;
-	Image im, th;
-	im.readPNM(path,errorMessage);
-	bdetector.FindBlobs(im);
+    
+	Image imag, th;
+	imag.readPNM(path,errorMessage);
+	bdetector.findBlobs(imag);
 	bdetector.retrieveThresholded(th);
 	th.writePNM(wpath, errorMessage);
+}
 
+void train(){
+    Perceptron p;
+    p.setW(p.readWeights("weight.txt"));
+    
+    Weights w = p.getW();
+    std::cout << std::endl;
+    std::cout << "old weights: " <<  w << std::endl;
+    
+    w = p.train();
+    p.setW(w);
+    p.saveWeights("weight.txt");
 }
 
 
 int main(int, const char **)
 {
-    thresholdtest();
+    train();
+    generateLearningData();
 }
 

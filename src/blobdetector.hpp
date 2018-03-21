@@ -9,8 +9,7 @@
 #define BLOBDETECTOR_H_
 
 #include <vector>
-#include "image.hpp"
-#include "geom.hpp"
+#include <image.hpp>
 
 struct RGB_RANGE {
 	RGB begin;
@@ -32,21 +31,28 @@ class BlobDetector {
 public:
 	BlobDetector();
 	virtual ~BlobDetector();
-
 public:
 	// Adds a Range of colors for thresholding
-	void AddRGBRange(RGB start, RGB end);
-	std::vector<BLOB> FindBlobs(Image& im);
+	void addRGBRange(RGB start, RGB end);
+	std::vector<BLOB> findBlobs(Image& im);
 
 	// Debugging functions
 	void retrieveThresholded(Image& ret) {ret = thresholded;}
-
-
+    void retrieveBlobed(Image& ret) {ret = blobed;}
+    void adddefaultRange() {addRGBRange(black, grey); addRGBRange(darkred, lightred);}
+    void reset() {original.destroy(); blobed.destroy(); thresholded.destroy();}
 private:
 	std::vector<RGB_RANGE> colorRanges;
-	void Threshold();
-	Image original;
+	void threshold();
+	Image blobed;
+    Image original;
 	Image thresholded;
+    
+    //some  RGB colors
+    RGB darkred = RGB(150, 0, 0);
+    RGB lightred = RGB(255, 100, 100);
+    RGB black = RGB(0,0,0);
+    RGB grey = RGB(50,50,50);
 };
 
 #endif /* BLOBDETECTOR_H_ */

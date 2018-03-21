@@ -19,6 +19,14 @@ std::ostream& operator<<(std::ostream& os, const RGB& color)
 	return(os);
 }
 
+bool operator==(RGB& col1, RGB& col2)
+{
+    if(col1.r == col2.r && col1.g == col2.g && col1.b == col2.b)
+        return true;
+    else
+        return false;
+}
+
 Image::Image() : m_data(0), m_width(0), m_height(0)
 {
 
@@ -74,6 +82,22 @@ void Image::operator=(const Image& other)
 
 	// copy image pixels
 	for(unsigned i=0;i<pixels();i++) m_data[i] = other.at(i);
+}
+
+void Image::operator=(const BinaryImage& mask)
+{
+    destroy();
+    if(!mask.isAllocated()) return;
+    
+    m_data   = new RGB[mask.pixels()];
+    m_width  = mask.width();
+    m_height = mask.height();
+    for(unsigned i=0;i<pixels();i++){
+        if(!mask.at(i))
+            m_data[i] = RGB(0,0,0);
+        else
+            m_data[i] = RGB(255,255,255);
+    }
 }
 
 RGB& Image::at(unsigned x, unsigned y)
@@ -274,4 +298,91 @@ bool Image::writePNM(const std::string& filename, std::string& errmsg) const
 	file.close();
 	return true;
 }
+
+BinaryImage::BinaryImage() : m_data(0), m_width(0), m_height(0)
+{
+    
+}
+
+BinaryImage::BinaryImage(unsigned width, unsigned height, const bool fillvalue)
+{
+    m_data   = 0;
+    m_width  = 0;
+    m_height = 0;
+    
+    if(width==0 || height==0) return;
+    m_data   = new bool[width*height]; // throws std::bad_alloc if unsuccessful
+    m_width  = width;
+    m_height = height;
+    for(unsigned i=0;i<width*height;i++) m_data[i] = fillvalue;
+}
+
+BinaryImage::~BinaryImage()
+{
+    if(m_data) delete [] m_data;
+}
+
+void BinaryImage::create(unsigned width, unsigned height, const bool fillvalue)
+{
+    destroy();
+    if(width==0 || height==0) return;
+    
+    m_data = new bool[width*height]; // throws std::bad_alloc if unsuccessful
+    m_width  = width;
+    m_height = height;
+    for(unsigned i=0;i<width*height;i++) m_data[i] = fillvalue;
+}
+
+void BinaryImage::destroy()
+{
+    if(m_data)
+    {
+        delete [] m_data;
+        m_width  = 0;
+        m_height = 0;
+    }
+}
+
+void BinaryImage::operator=(const BinaryImage& other)
+{
+    destroy();
+    if(!other.isAllocated()) return;
+    
+    m_data   = new bool[other.pixels()];
+    m_width  = other.width();
+    m_height = other.height();
+    
+    // copy image pixels
+    for(unsigned i=0;i<pixels();i++) m_data[i] = other.at(i);
+}
+
+bool BinaryImage::at(unsigned x, unsigned y)
+{
+    if(m_data==0 || x>=m_width || y>=m_height) throw std::out_of_range("Image::at(x,y) out of range");
+    return(m_data[y*m_width+x]);
+}
+
+const bool& BinaryImage::at(unsigned x, unsigned y) const
+{
+    if(m_data==0 || x>=m_width || y>=m_height) throw std::out_of_range("Image::at(x,y) out of range");
+    return(m_data[y*m_width+x]);
+}
+
+bool BinaryImage::at(unsigned index)
+{
+    if(m_data==0 || index>=m_width*m_height) throw std::out_of_range("Image::at(i) out of range");
+    return(m_data[index]);
+}
+
+const bool& BinaryImage::at(unsigned index) const
+{
+    if(m_data==0 || index>=m_width*m_height) throw std::out_of_range("Image::at(i) out of range");
+    return(m_data[index]);
+}
+
+void BinaryImage::setPixel(unsigned x, unsigned y, bool value)
+{
+    m_data[y*m_width+x] = value;
+}
+
 

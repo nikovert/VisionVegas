@@ -41,17 +41,53 @@ struct RGB
 	{
 		return (r > other.r) && (g > other.g) && (b > other.b);
 	}
+    bool operator==(const RGB& other) //not recomended except for cases where == is def.
+    {
+        return (r == other.r) && (g == other.g) && (b == other.b);
+    }
 
 };
 
+bool operator==(RGB& col1, RGB& col2);
 std::ostream& operator<<(std::ostream& os, const RGB& color);
+
+//-------------------------------------------------------------------------------------
+class BinaryImage
+//-------------------------------------------------------------------------------------
+{
+private:
+    bool* m_data; // note: storage in row-major order
+    unsigned m_width;
+    unsigned m_height;
+    
+public:
+    BinaryImage();
+    BinaryImage(unsigned width, unsigned height, const bool fillvalue = false);
+    BinaryImage(const BinaryImage& other);
+    virtual ~BinaryImage();
+    void create(unsigned width, unsigned height, const bool fillvalue = false);
+    void destroy();
+    void operator=(const BinaryImage& other);
+    
+public:
+    unsigned width()  const { return(m_width); }
+    unsigned height() const { return(m_height); }
+    unsigned pixels() const { return(m_width*m_height); }
+    bool isAllocated() const { return(m_data); }
+    
+public:
+    bool at(unsigned x, unsigned y);
+    const bool& at(unsigned x, unsigned y) const;
+    bool at(unsigned index);
+    const bool& at(unsigned index) const;
+    void setPixel(unsigned x, unsigned y, bool value);
+};
 
 //-------------------------------------------------------------------------------------
 class Image
 //-------------------------------------------------------------------------------------
 {
-// friend BlobDetector;
-
+    
 private:
 	RGB* m_data; // note: storage in row-major order
 	unsigned m_width;
@@ -65,6 +101,7 @@ public:
 	void create(unsigned width, unsigned height, const RGB& fillcolor = RGB(0,0,0));
 	void destroy();
 	void operator=(const Image& other);
+    void operator=(const BinaryImage& mask);
 
 public:
 	unsigned width()  const { return(m_width); }
@@ -91,3 +128,4 @@ public: // file input/output
 };
 
 #endif
+
