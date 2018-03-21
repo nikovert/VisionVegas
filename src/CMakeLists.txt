@@ -6,12 +6,12 @@ SET(CMAKE_COLOR_MAKEFILE ON)
 
 IF( CMAKE_BUILD_TYPE MATCHES "[Dd][Ee][Bb][Uu][Gg]" )
     # Debug
-    SET(CMAKE_C_FLAGS "-ansi -O0 -g -fno-inline -Wall -Wunused -Wextra")
-    SET(CMAKE_CXX_FLAGS "-ansi -O0 -g -fno-inline -Wall -Wunused -Wextra")
+    SET(CMAKE_C_FLAGS "-std=c11 -O0 -g -fno-inline -Wall -Wunused -Wextra")
+    SET(CMAKE_CXX_FLAGS "-std=gnu++14 -O0 -g -fno-inline -Wall -Wunused -Wextra")
 ELSE( CMAKE_BUILD_TYPE MATCHES "[Dd][Ee][Bb][Uu][Gg]" )
     # Release
-    SET(CMAKE_C_FLAGS "-ansi -O3 -Wall -Wunused -Wextra")
-    SET(CMAKE_CXX_FLAGS "-ansi -O3 -Wall -Wunused -Wextra")
+    SET(CMAKE_C_FLAGS "-std=c11 -O3 -Wall -Wunused -Wextra")
+    SET(CMAKE_CXX_FLAGS "-std=gnu++14 -O3 -Wall -Wunused -Wextra")
 ENDIF( CMAKE_BUILD_TYPE MATCHES "[Dd][Ee][Bb][Uu][Gg]" )
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDISPLAY")
