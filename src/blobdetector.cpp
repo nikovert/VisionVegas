@@ -29,6 +29,7 @@ std::vector<BLOB> BlobDetector::findBlobs(Image& imb)
 {
 	original = imb;
 	threshold();
+	//return std::vector<BLOB>();
     retrieveThresholded(blobed);
 
     bool blob_continuation = false;
@@ -43,11 +44,15 @@ std::vector<BLOB> BlobDetector::findBlobs(Image& imb)
     
     for (unsigned x = 0; x < blobed.width(); x++) {
         for (unsigned y = 0; y < blobed.height(); y++) {
+        	if (blobed.height() - y < 5) {
+        		y++;
+        		y--;
+        	}
             if (thresholded.at(x,y) == black){ //if pixel is in threshhold
                 if(blob_continuation)          //if we were just setting a blob, continue doing that
                     blobfield[x][y] = blobcount; // continuation of a blob
                 else
-                    if(thresholded.at(x+1,y) == black || thresholded.at(x,y+1) == black){   //might be a new blob
+                    if((x+1 < blobed.width() && thresholded.at(x+1,y) == black) || (y+1 < blobed.height() && thresholded.at(x,y+1) == black)){   //might be a new blob
                         blob_continuation = true;
                         if(x!= 0 && blobfield[x-1][y] > 0)         //check previous fields to see if it was a blob
                             blobcount = blobfield[x-1][y];

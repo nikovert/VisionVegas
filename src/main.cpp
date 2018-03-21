@@ -159,14 +159,15 @@ bool generateLearningData(){
 
 void thresholdtest()
 {
-	RGB darkred(0x99, 0, 0);
+	RGB darkred(0x80, 0x0, 0x0);
 	RGB lightred(0xff, 0x66, 0x66);
 	RGB black(0x0, 0x0, 0x0);
 	RGB grey(0x50, 0x50, 0x50);
 	BlobDetector bdetector = BlobDetector();
 	bdetector.addRGBRange(darkred, lightred);
+	bdetector.addRGBRange(black, grey);
 
-	std::string path = "../card_images/h8.1.pnm";
+	std::string path = "../card_images/k8.1.pnm";
 	std::string wpath = "../thresholded.pnm";
 	std::string wbpath = "../blobed.pnm";
 	std::string errorMessage;
@@ -391,6 +392,8 @@ void train(){
 
 int main(int, const char **)
 {
-	redrecognitiontest();
+
+
+	return 0;
 }
 
