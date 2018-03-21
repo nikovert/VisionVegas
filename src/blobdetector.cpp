@@ -30,8 +30,6 @@ std::vector<BLOB> BlobDetector::findBlobs(Image& imb)
 	original = imb;
 	threshold();
     retrieveThresholded(blobed);
-    
-    std::vector<BLOB> blobs;
 
     bool blob_continuation = false;
     int blobcount = 0;
@@ -68,14 +66,14 @@ std::vector<BLOB> BlobDetector::findBlobs(Image& imb)
         }
     }
     
-    std::cout << "maxblobcount: " << maxblobcount << std::endl;
-    unsigned mergethreshhold = 5;
+    // std::cout << "maxblobcount: " << maxblobcount << std::endl;
+    const int mergethreshhold = 6; // Do not choose over 20. Time complexity is n^2
     //merging, blobs that are close and taking out blobs that are too small
-    for (unsigned x = 0; x < blobed.width(); x++) {
-        for (unsigned y = 0; y < blobed.height(); y++) {
-            for(unsigned i = 0; i < mergethreshhold; i++)
-                for(unsigned j = 0; j < mergethreshhold; j++)
-                    if(blobfield[x][y] > 0 && x+i < original.width() && y+j < original.height() && blobfield[x+i][y+j] > 0)
+    for (int x = 0; x < blobed.width(); x++) {
+        for (int y = 0; y < blobed.height(); y++) {
+            for(int i = -mergethreshhold; i <= mergethreshhold; i++)
+                for(int j = -mergethreshhold; j <= mergethreshhold; j++)
+                    if(blobfield[x][y] > 0 && x+i < original.width() && x+i>=0 && y+j < original.height() && y+j>=0 && blobfield[x+i][y+j] > 0)
                         blobfield[x+i][y+j] = blobfield[x][y];
         }
     }
@@ -89,6 +87,31 @@ std::vector<BLOB> BlobDetector::findBlobs(Image& imb)
         }
     }
     
+    // Write blobs to vector
+    const unsigned minPixelCount = 500;
+    const unsigned maxPixelCount = 2000;
+    std::vector<BLOB> _blobs(2*maxblobcount+1, BLOB(Vector2d(), 0));
+
+    // Generate blobs
+    for (unsigned x = 0; x < blobed.width(); x++) {
+        for (unsigned y = 0; y < blobed.height(); y++) {
+        	int i = blobfield[x][y];
+            if(i > 0) {
+                BLOB& b = _blobs.at(i);
+                b.area++;
+                b.center.x += x;
+                b.center.y += y;
+            }
+        }
+    }
+    std::vector<BLOB> blobs;
+    // Calculate real center
+    for (std::vector<BLOB>::iterator it = _blobs.begin(); it != _blobs.end(); it++) {
+    	if (it->area >= minPixelCount && it->area <= maxPixelCount) {
+    		blobs.push_back(BLOB(it->center * (1.0 / ((double)it->area)), it->area));
+    	}
+    }
+
     std::string errmsg;
     //blobed.writePNM("blob.pnm",errmsg);
 	return blobs;

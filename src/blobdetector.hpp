@@ -20,6 +20,7 @@ struct RGB_RANGE {
 struct BLOB {
 	Vector2d center;
 	unsigned int area;
+	BLOB(Vector2d _c, unsigned int _a) : center(_c), area(_a) {}
 };
 
 /*
