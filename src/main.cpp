@@ -193,6 +193,6 @@ int main(int, const char **)
 {
     //train();
     //generateLearningData();
-    cardcheck();
+    //cardcheck();
 }
 

@@ -216,7 +216,10 @@ bool Carddetector::maskCard()
     //______________detect corners__________________________________________________________________
     // detect boundary points of the card
     std::vector<Point2d> boundary_points;
-    if(!playingcard.detectCardBoundary(boundary_points)) return false;
+    if(!playingcard.detectCardBoundary(boundary_points)){
+        std::cerr << "failed detecting boundary points" << std::endl;
+        return false;
+    }
     //std::cout << boundary_points.size() << " boundary points\n";
     
     // find consecutive collinear points and fit a line to them

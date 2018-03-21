@@ -112,19 +112,24 @@ Weights Perceptron::train()
     std::cout << "Training Perceptron... " << "\n" << std::endl;
     
     for(int j = 0; j < 100; j++){
-        for(int i = 0; i < 102; i += 2){
+        for(int i = 0; i < 30; i += 2){
             //Load new Image and Mask
-    //        std::string fileMask = ReadNthLinefromFile("../../trainingdata/training_list.txt", i);
-    //        std::string fileOriginal = ReadNthLinefromFile("../../trainingdata/training_list.txt", i+1);
+            std::string fileOriginal = ReadNthLinefromFile("../../trainingdata/training_list.txt", i);
+            std::string fileMask = ReadNthLinefromFile("../../trainingdata/training_list.txt", i+1);
             //std::cout << "Reading File: " << fileOriginal << " with Mask: " << fileMask << std::endl;
             
-    //        std::string location = "../../trainingdata/";
-    //        location.append(fileOriginal);
-            im.readPNM("/Users/nikovertovec/Documents/VisionVegas/trainingdata/e2.1.pnm",errmsg);
+            std::string location = "../../trainingdata/";
+            location.append(fileOriginal);
+            im.readPNM(location,errmsg);
             
-    //        location = "../../trainingdata/";
-    //        location.append(fileMask);
-            mask.readPNM("/Users/nikovertovec/Documents/VisionVegas/trainingdata/e2.1_mask.pnm",errmsg);
+            location = "../../trainingdata/";
+            location.append(fileMask);
+            mask.readPNM(location,errmsg);
+            
+            if(!mask.isAllocated())
+                std::cerr << "ERROR, mask not allocated!" << std::endl;
+            if(!im.isAllocated())
+                std::cerr << "ERROR, im not allocated!" << std::endl;
             
             //Train each pixel
             if(mask.pixels() != im.pixels()){
