@@ -85,7 +85,7 @@ bool cardcheck(){
         
         if(detector.isolateCard()){
             
-            detector.detectBlobs();
+            //detector.detectBlobs();
             detector.retrieveCrop(im);
             
             // get value of the card
@@ -191,7 +191,8 @@ void train(){
 
 int main(int, const char **)
 {
-    train();
-    generateLearningData();
+    //train();
+    //generateLearningData();
+    cardcheck();
 }
 

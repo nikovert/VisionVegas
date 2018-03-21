@@ -26,9 +26,11 @@ bool Card::readImage(std::string& errmsg, std::string& str)
 
 bool Card::isBackground(const Point2d& point, uchar red_threshold) const
 {
-    if(usingPerceptron)
+    if(usingPerceptron){
         return isBackground(point);
+    }
     else{
+        std::cout << " not using perceptron!";
         if(!im.isAllocated()) return false;
         int x = point.X();
         int y = point.Y();

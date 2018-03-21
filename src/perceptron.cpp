@@ -16,7 +16,7 @@ std::ostream& operator<<(std::ostream& os, const Weights& w)
 bool Perceptron::eval(const RGB& pixel) const
 {
     //std::cout << w.weight0 + w.weightR * pixel.r + w.weightG * pixel.g + w.weightB * pixel.b << std::endl;
-    return (w.weight0 + w.weightR * pixel.r + w.weightG * pixel.g + w.weightB * pixel.b > 0);
+    return (w.weight0 + w.weightR * pixel.r + w.weightG * pixel.g + w.weightB * pixel.b >= 0);
 }
 
 bool Perceptron::saveWeights(std::string location)
@@ -75,7 +75,7 @@ void Perceptron::setW(Weights weight)
 
 Weights Perceptron::learn(RGB& pixel, bool target)
 {
-    //std::cout << target <<std::endl;
+    //std::cout << "Target: " << target << " Weight_old: " << w << " pixel: " << pixel << std::endl;
     bool y = eval(pixel); //is backround
     w.weight0 += (target-y) * 1;
     w.weightR += (target-y) * pixel.r;
@@ -114,17 +114,17 @@ Weights Perceptron::train()
     for(int j = 0; j < 100; j++){
         for(int i = 0; i < 102; i += 2){
             //Load new Image and Mask
-            std::string fileMask = ReadNthLinefromFile("../../trainingdata/training_list.txt", i);
-            std::string fileOriginal = ReadNthLinefromFile("../../trainingdata/training_list.txt", i+1);
+    //        std::string fileMask = ReadNthLinefromFile("../../trainingdata/training_list.txt", i);
+    //        std::string fileOriginal = ReadNthLinefromFile("../../trainingdata/training_list.txt", i+1);
             //std::cout << "Reading File: " << fileOriginal << " with Mask: " << fileMask << std::endl;
             
-            std::string location = "../../trainingdata/";
-            location.append(fileOriginal);
-            im.readPNM(location,errmsg);
+    //        std::string location = "../../trainingdata/";
+    //        location.append(fileOriginal);
+            im.readPNM("/Users/nikovertovec/Documents/VisionVegas/trainingdata/e2.1.pnm",errmsg);
             
-            location = "../../trainingdata/";
-            location.append(fileOriginal);
-            mask.readPNM(location,errmsg);
+    //        location = "../../trainingdata/";
+    //        location.append(fileMask);
+            mask.readPNM("/Users/nikovertovec/Documents/VisionVegas/trainingdata/e2.1_mask.pnm",errmsg);
             
             //Train each pixel
             if(mask.pixels() != im.pixels()){
@@ -134,6 +134,7 @@ Weights Perceptron::train()
             
             for(unsigned x0 = 1; x0 < im.width(); x0++){
                 for(unsigned y0 = 1; y0 < im.height(); y0++){
+                    //w = learn(im.at(x0, y0), im.at(x0, y0).r < 128);
                     w = learn(im.at(x0, y0), (mask.at(x0, y0) < RGB(50, 50, 50)));
                 }
             }

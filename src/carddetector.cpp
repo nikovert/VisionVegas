@@ -176,7 +176,7 @@ bool Carddetector::isolateCard()
         cardHeight = 370;
         cardWidth = 250;
     }
-    cardimage.create(cardWidth, cardHeight, RGB(255,255,255));
+    cardimage.create(cardWidth, cardHeight, RGB(255,255,255)); //set default backround
     
     std::cout << "cardWidth: " << cardWidth << " cardHeight: " << cardHeight << std::endl;
     std::cerr << "writing Card: " << currentCard;
