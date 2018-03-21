@@ -89,9 +89,9 @@ bool cardcheck(){
             std::string output;
             // write image to disk
             if(detector.isdebug())
-                output = std::to_string(i) + "_output_debug_" + file;
+                output = "output_debug_" + file;
             else
-                output = std::to_string(i) + "_output_" + file;
+                output = "output_" + file;
             if(!im.writePNM(output,errmsg)) return false;
         }
         else
