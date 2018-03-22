@@ -46,8 +46,14 @@ bool Card::isBackground(const Point2d& point) const
     if(!im.isAllocated()) return false;
     int x = point.X();
     int y = point.Y();
-    if (x>=0 && x<int(im.width()) && y>=0 && y<int(im.height()))
-        return(percep.eval(im.at(x,y)));
+    if (x >= 1 && x< int(im.width())-1 && y >= 1 && y < int(im.height())-1){
+        std::vector<RGB> pixels;
+        for(int j = -1; j<= 1; j++){
+            for(int i = -1; i <= 1; i++)
+                pixels.push_back(im.at(x+i, y+j));
+        }
+        return percep.eval(pixels);
+    }
     else
         return true;
 }
@@ -126,7 +132,7 @@ bool Card::detectCardBoundary(std::vector<Point2d>& boundary_points, double dist
 
 bool Card::loadPerceptron()
 {
-    percep.setW(percep.readWeights("weight.txt"));
+    percep.setW(percep.readWeights("../../weights"));
     if(percep.getW().weight0 == 0) return false;
     usingPerceptron = true;
     std::cout << "Using weights: " << percep.getW() << std::endl;

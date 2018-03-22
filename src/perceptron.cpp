@@ -9,14 +9,43 @@
 
 std::ostream& operator<<(std::ostream& os, const Weights& w)
 {
-    os << w.weight0 << " " << w.weightR << " " << w.weightG << " " << w.weightB << "\n";
+    os << w.weight0 << "\n";
+    for (auto &weight : w.w) {
+        for (auto &color : weight) {
+            os << color << " ";
+        }
+        os << "\t";
+    }
     return(os);
 }
 
-bool Perceptron::eval(const RGB& pixel) const
+bool Perceptron::eval(std::vector<RGB> pixels) const
 {
-    //std::cout << w.weight0 + w.weightR * pixel.r + w.weightG * pixel.g + w.weightB * pixel.b << std::endl;
-    return (w.weight0 + w.weightR * pixel.r + w.weightG * pixel.g + w.weightB * pixel.b >= 0);
+    int value = w.weight0;
+    
+    std::vector<std::vector<int>>::const_iterator iterWeightpixel;
+    std::vector<int>::const_iterator iterWeightcolor;
+    std::vector<RGB>::const_iterator iterPixel;
+    
+    iterWeightpixel = w.w.begin();
+    
+    for(iterPixel = pixels.begin(); iterPixel < pixels.end(); iterPixel++){
+        for(iterWeightcolor = iterWeightpixel->begin(); iterWeightcolor <  iterWeightpixel->end(); iterWeightcolor++){
+            RGB color = *iterPixel;
+            value += (*iterWeightcolor) * int((*iterPixel).r) + *(++iterWeightcolor) * int((*iterPixel).g) + *(++iterWeightcolor) * int((*iterPixel).b);
+            /*
+            std::cout << "List for eval: " << std::endl;
+            std::cout << (*iterWeightcolor) << std::endl;
+            std::cout << int(color.r) <<std::endl;
+            std::cout << *(++iterWeightcolor) <<std::endl;
+            std::cout << int(color.g) <<std::endl;
+            std::cout << *(++iterWeightcolor) <<std::endl;
+            std::cout << int(color.b) <<std::endl;
+             */
+        }
+        iterWeightpixel++;
+    }
+    return value >= 0;
 }
 
 bool Perceptron::saveWeights(std::string location)
@@ -27,9 +56,14 @@ bool Perceptron::saveWeights(std::string location)
     Weightfile << "Weights:" << std::endl;
     
     Weightfile << w.weight0 << std::endl;
-    Weightfile << w.weightR << std::endl;
-    Weightfile << w.weightG << std::endl;
-    Weightfile << w.weightB << std::endl;
+    
+    std::vector<int>::iterator iterWeight;
+    
+    for (auto &weight : w.w) {
+        for (auto &color : weight) {
+            Weightfile << color << "\n";
+        }
+    }
     
     Weightfile.close();
     return true;
@@ -49,17 +83,19 @@ Weights Perceptron::readWeights(std::string location)
         std::getline(in, str);
     
     std::getline(in,str);
-    w.weight0 = stod(str);
+    w.weight0 = stoi(str);
     
-    std::getline(in,str);
-    w.weightR = stod(str);
+    std::vector<std::vector<int>> vec;
     
-    std::getline(in,str);
-    w.weightG = stod(str);
-    
-    std::getline(in,str);
-    w.weightB = stod(str);
-    
+    for (auto &weight : w.w) {
+        std::vector<int> colorWeight;
+        for (auto &color : weight) {
+            std::getline(in,str);
+            colorWeight.push_back(stoi(str));
+        }
+        vec.push_back(colorWeight);
+    }
+    w.w = vec;
     return w;
 }
 
@@ -73,14 +109,33 @@ void Perceptron::setW(Weights weight)
     w = weight;
 }
 
-Weights Perceptron::learn(RGB& pixel, bool target)
+Weights Perceptron::learn(std::vector<RGB> pixels, bool target)
 {
-    //std::cout << "Target: " << target << " Weight_old: " << w << " pixel: " << pixel << std::endl;
-    bool y = eval(pixel); //is backround
-    w.weight0 += (target-y) * 1;
-    w.weightR += (target-y) * pixel.r;
-    w.weightG += (target-y) * pixel.g;
-    w.weightB += (target-y) * pixel.b;
+    //Weights weight;
+    //std::cout << "pixelSize: " << pixels.size();
+    bool y = eval(pixels); //is backround
+    
+    w.weight0 = w.weight0 + (target-y) * 1;
+    
+    
+    std::vector<std::vector<int>>::const_iterator iterWeightpixel;
+    std::vector<int>::const_iterator iterWeightcolor;
+    std::vector<RGB>::iterator iterPixel;
+    
+    std::vector<std::vector<int>> vec;
+    iterWeightpixel = w.w.begin();
+    
+    for(iterPixel = pixels.begin(); iterPixel < pixels.end(); iterPixel++){
+        for(iterWeightcolor = iterWeightpixel->begin(); iterWeightcolor <  iterWeightpixel->end(); iterWeightcolor++){
+            std::vector<int> colorWeight;
+            colorWeight.push_back(  (*iterWeightcolor) + (target-y) * (*iterPixel).r);
+            colorWeight.push_back((*++iterWeightcolor) + (target-y) * (*iterPixel).g);
+            colorWeight.push_back((*++iterWeightcolor) + (target-y) * (*iterPixel).b);
+            vec.push_back(colorWeight);
+        }
+        iterWeightpixel++;
+    }
+    w.w = vec;
     return w;
 }
 
@@ -102,21 +157,17 @@ std::string ReadNthLinefromFile(const std::string& filename, int N)
 
 Weights Perceptron::train()
 {
-    /*
-        loop:   -Read in a photo and it's mask
-                -learn with each pixel and it's mask and update the weights
-     */
     Image im, mask;
     std::string errmsg;
     
     std::cout << "Training Perceptron... " << "\n" << std::endl;
     
-    for(int j = 0; j < 100; j++){
-        for(int i = 0; i < 30; i += 2){
+    for(int j = 0; j < 50; j++){
+        for(int i = 30; i < 40; i += 2){
             //Load new Image and Mask
             std::string fileOriginal = ReadNthLinefromFile("../../trainingdata/training_list.txt", i);
             std::string fileMask = ReadNthLinefromFile("../../trainingdata/training_list.txt", i+1);
-            //std::cout << "Reading File: " << fileOriginal << " with Mask: " << fileMask << std::endl;
+            std::cout << "Reading File: " << fileOriginal << " with Mask: " << fileMask << std::endl;
             
             std::string location = "../../trainingdata/";
             location.append(fileOriginal);
@@ -131,20 +182,25 @@ Weights Perceptron::train()
             if(!im.isAllocated())
                 std::cerr << "ERROR, im not allocated!" << std::endl;
             
-            //Train each pixel
             if(mask.pixels() != im.pixels()){
                 std::cerr << "Image dimensions don't match" << std::endl;
                 continue;
             }
             
-            for(unsigned x0 = 1; x0 < im.width(); x0++){
-                for(unsigned y0 = 1; y0 < im.height(); y0++){
-                    //w = learn(im.at(x0, y0), im.at(x0, y0).r < 128);
-                    w = learn(im.at(x0, y0), (mask.at(x0, y0) < RGB(50, 50, 50)));
+            for(unsigned x0 = 1; x0 < im.width()-1; x0++){
+                for(unsigned y0 = 1; y0 < im.height()-1; y0++){
+                    std::vector<RGB> pixels;
+                    for(int n = -1; n<= 1; n++){
+                        for(int k = -1; k <= 1; k++){
+                            pixels.push_back(im.at(x0+k, y0+n));
+                            //std::cout << im.at(x0+k, y0+n);
+                        }
+                    }
+                    w = learn(pixels, (mask.at(x0, y0) < RGB(50, 50, 50)));
                 }
             }
         }
-        std::cout << "Weights: " << w << " \t Iteration: " << j << std::endl;
+        std::cout << "Weights: " << w << " \n Iteration: " << j << std::endl;
     }
     return w;
 }

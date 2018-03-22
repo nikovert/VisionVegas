@@ -162,7 +162,7 @@ bool simpleMasktest(){
     card.loadPerceptron();
     std::string errmsg;
     
-    std::string str = "/Users/nikovertovec/Documents/VisionVegas/card_images/e4.2.pnm";
+    std::string str = "/Users/nikovertovec/Documents/VisionVegas/card_images/sj.1.pnm";
     card.readImage(errmsg, str);
     
     Carddetector detector(card);
@@ -180,7 +180,7 @@ bool simpleMasktest(){
         }
         
         // write image to disk
-        std::string output = "output_e4.2.pnm";
+        std::string output = "output_sj.1.pnm";
         if(!im.writePNM(output,errmsg)){
             std::cerr << "ERROR writing image to file" << std::endl;
             return false;
@@ -414,21 +414,21 @@ void blackrecognitiontest()
 
 void train(){
     Perceptron p;
-    p.setW(p.readWeights("weight.txt"));
+    p.setW(p.readWeights("../../weights"));
     
     Weights w = p.getW();
     std::cout << std::endl;
-    std::cout << "old weights: " <<  w << std::endl;
+    std::cout << "old weights: " << w << std::endl;
     
     w = p.train();
     p.setW(w);
-    p.saveWeights("weight.txt");
+    p.saveWeights("../../weights");
 }
 
 
 int main(int, const char **)
 {
-    //train();
+    //train(); // 7634 -43 297 -327
     simpleMasktest();
     //generateLearningData();
     //cardcheck();

@@ -10,14 +10,22 @@
 
 #include <stdio.h>
 #include <image.hpp>
-
+#include <vector>
 #include <fstream>
 
 
 struct Weights
 {
-    double weight0, weightR, weightG, weightB;
-    Weights() : weight0(0), weightR(0), weightG(0), weightB(0) {};
+    std::vector<std::vector<int>> w;
+    int weight0;
+    
+    /*
+    tl  tc  tr
+    cl  cc  cr
+    bl  bc  br
+    */
+    
+    Weights() :w(9, std::vector<int>(3, 0)), weight0(0) {};
 };
 
 std::ostream& operator<<(std::ostream& os, const Weights& w);
@@ -30,10 +38,10 @@ private:
     Weights w;
 public:
     Perceptron() {w = Weights();};
-    bool eval(const RGB& pixel) const; //returns if the pixel is card(false) or Backround(true)
+    bool eval(std::vector<RGB> pixels) const; //returns if the pixel is card(false) or Backround(true)
     Weights getW();
     void setW(Weights weight);
-    Weights learn(RGB& pixel, bool target); //updates the weights
+    Weights learn(std::vector<RGB> pixels, bool target); //updates the weights
     Weights train(); //requires the learning database
     bool saveWeights(std::string location); //write Weights to txt file;
     Weights readWeights(std::string location); //read Weights from txt file
