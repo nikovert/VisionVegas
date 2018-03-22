@@ -74,7 +74,6 @@ bool cardcheck(){
         card.readImage(errmsg, str);
         
         Carddetector detector(card);
-        
         detector.currentCard = file;
         
         // create a copy of the loaded image
@@ -121,16 +120,17 @@ bool generateLearningData(){
     std::cout << "Playingcard checks: " << "\n" << std::endl;
     
     for(int i = 1; i < 100; i++){
-        Carddetector detector(card);
         
         std::string str = "../../card_images/";
         std::string file = ReadNthLine("../../card_images/card_list.txt", i);
         std::cout << "Reading File: " << file << std::endl;
         
-        detector.currentCard = file;
         str.append(file);
         
         card.readImage(errmsg, str);
+        
+        Carddetector detector(card);
+        detector.currentCard = file;
         
         // create a copy of the loaded image
         Image im;
@@ -154,6 +154,42 @@ bool generateLearningData(){
         
         std::cout << "\n";
     }
+    return true;
+}
+
+bool simpleMasktest(){
+    Card card;
+    card.loadPerceptron();
+    std::string errmsg;
+    
+    std::string str = "/Users/nikovertovec/Documents/VisionVegas/card_images/e4.2.pnm";
+    card.readImage(errmsg, str);
+    
+    Carddetector detector(card);
+    
+    // create a copy of the loaded image
+    Image im;
+    
+    detector.initBlobdetection();
+    
+    if(detector.simpleMask()){
+        detector.retrieveCrop(im);
+        
+        if(!im.isAllocated()){
+            std::cerr << "ERROR im not allocated!" << std::endl;
+        }
+        
+        // write image to disk
+        std::string output = "output_e4.2.pnm";
+        if(!im.writePNM(output,errmsg)){
+            std::cerr << "ERROR writing image to file" << std::endl;
+            return false;
+        }
+    }
+    else
+        std::cout << "Card Failed " << "\n";
+    
+    std::cout << "\n";
     return true;
 }
 
@@ -393,7 +429,9 @@ void train(){
 int main(int, const char **)
 {
     //train();
+    simpleMasktest();
     //generateLearningData();
     //cardcheck();
+    //blackrecognitiontest();
 }
 

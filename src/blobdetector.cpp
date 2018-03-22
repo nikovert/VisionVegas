@@ -74,11 +74,11 @@ std::vector<BLOB> BlobDetector::findBlobs(Image& imb)
     // std::cout << "maxblobcount: " << maxblobcount << std::endl;
     const int mergethreshhold = 6; // Do not choose over 20. Time complexity is n^2
     //merging, blobs that are close and taking out blobs that are too small
-    for (int x = 0; x < blobed.width(); x++) {
-        for (int y = 0; y < blobed.height(); y++) {
+    for (unsigned x = 0; x < blobed.width(); x++) {
+        for (unsigned y = 0; y < blobed.height(); y++) {
             for(int i = -mergethreshhold; i <= mergethreshhold; i++)
                 for(int j = -mergethreshhold; j <= mergethreshhold; j++)
-                    if(blobfield[x][y] > 0 && x+i < original.width() && x+i>=0 && y+j < original.height() && y+j>=0 && blobfield[x+i][y+j] > 0)
+                    if(blobfield[x][y] > 0 && x+i < original.width() && x+i >= 0 && y+j < original.height() && y+j>=0 && blobfield[x+i][y+j] > 0)
                         blobfield[x+i][y+j] = blobfield[x][y];
         }
     }

@@ -299,6 +299,35 @@ bool Carddetector::maskCard()
     return true;
 }
 
+bool Carddetector::simpleMask()
+{
+    Image pic;
+    playingcard.cloneImageTo(pic);
+    
+    if(!pic.isAllocated())
+        std::cerr << "ERROR pic isn't Allocated" << std::endl;
+    
+    Image cropedcard(pic.width(), pic.height());
+    BinaryImage maskimage(pic.width(), pic.height());
+    for(unsigned x0 = 1; x0 < pic.width(); x0++){
+        for(unsigned y0 = 1; y0 < pic.height(); y0++){
+            Point2d pixel(x0, y0);
+            if(playingcard.isBackground(pixel)){ // only if the pixel is part of the card;
+                maskimage.setPixel(x0, y0, false);
+                cropedcard.at(x0, y0) = RGB(0,0,0);
+            }
+            else{
+                maskimage.setPixel(x0, y0, true);
+                cropedcard.at(x0, y0) = pic.at(x0, y0);
+            }
+        }
+    }
+    //crop = maskimage;
+    crop = cropedcard;
+    std::cerr << " ... success in simpleMask!" << std::endl;
+    return true;
+}
+
 Point2d mintranslation(Vector3d corner1,Vector3d corner2,Vector3d corner3,Vector3d corner4){
     //x
     double xtrans;

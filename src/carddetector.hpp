@@ -37,6 +37,7 @@ public:
     bool isdebug() {return debug;}
     bool isolateCard();
     bool maskCard();
+    bool simpleMask();
     void retrieveCrop(Image& im) {im = crop;}
     
     BlobDetector blob;
