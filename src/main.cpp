@@ -63,9 +63,9 @@ bool cardcheck(){
     std::cout.rdbuf(psbuf);         // assign streambuf to cout
     
     std::cout << "Playingcard checks: " << "\n" << std::endl;
-    
-    for(int i = 1; i < 70; i++){
-        
+    double success(0), counter(0);
+    for(int i = 0; i < 123; i++){
+        counter++;
         std::string str = "../../card_images/";
         std::string file = ReadNthLine("../../card_images/card_list.txt", i);
         std::cout << "Reading File: " << file << std::endl;
@@ -86,10 +86,11 @@ bool cardcheck(){
             
             //detector.detectBlobs();
             detector.retrieveCrop(im);
+            card.setImage(im);
             
             // get value of the card
-            std::cout << "Card value: " << card.getValue() << "\n";
-            
+            //std::cout << "Card value: " << card.getValue() << "\n";
+            success++;
             std::string output;
             // write image to disk
             if(detector.isdebug())
@@ -108,52 +109,7 @@ bool cardcheck(){
     
     filestr.close();
     
-    return true;
-}
-
-//helps with the learning data generations, not automatic
-bool generateLearningData(){
-    Card card;
-    card.loadPerceptron();
-    std::string errmsg;
-    
-    std::cout << "Playingcard checks: " << "\n" << std::endl;
-    
-    for(int i = 1; i < 100; i++){
-        
-        std::string str = "../../card_images/";
-        std::string file = ReadNthLine("../../card_images/card_list.txt", i);
-        std::cout << "Reading File: " << file << std::endl;
-        
-        str.append(file);
-        
-        card.readImage(errmsg, str);
-        
-        Carddetector detector(card);
-        detector.currentCard = file;
-        
-        // create a copy of the loaded image
-        Image im;
-        card.cloneImageTo(im);
-        //detector.setdebug();
-        detector.initBlobdetection();
-        
-        if(detector.maskCard()){
-            detector.retrieveCrop(im);
-            
-            std::string output;
-            // write image to disk
-            if(detector.isdebug())
-                output = std::to_string(i) + "_output_debug_" + file;
-            else
-                output = std::to_string(i) + "_output_" + file;
-            if(!im.writePNM(output,errmsg)) return false;
-        }
-        else
-            std::cout << "Card Failed " << "\n";
-        
-        std::cout << "\n";
-    }
+    std::cout << "success rate: " << success/counter * 100 << "%" << std::endl;
     return true;
 }
 
@@ -162,7 +118,7 @@ bool simpleMasktest(){
     card.loadPerceptron();
     std::string errmsg;
     
-    std::string str = "/Users/nikovertovec/Documents/VisionVegas/card_images/sj.1.pnm";
+    std::string str = "/Users/nikovertovec/Documents/VisionVegas/card_images/h8.1.pnm";
     card.readImage(errmsg, str);
     
     Carddetector detector(card);
@@ -170,19 +126,17 @@ bool simpleMasktest(){
     // create a copy of the loaded image
     Image im;
     
-    detector.initBlobdetection();
-    
     if(detector.simpleMask()){
-        detector.retrieveCrop(im);
+        detector.retrieveMask(im);
         
         if(!im.isAllocated()){
-            std::cerr << "ERROR im not allocated!" << std::endl;
+            std::cerr << "ERROR in simpleMasktest: im not allocated!" << std::endl;
         }
         
         // write image to disk
-        std::string output = "output_sj.1.pnm";
+        std::string output = "output_h8.1.pnm";
         if(!im.writePNM(output,errmsg)){
-            std::cerr << "ERROR writing image to file" << std::endl;
+            std::cerr << "ERROR in simpleMasktest: writing image to file" << std::endl;
             return false;
         }
     }
@@ -428,10 +382,9 @@ void train(){
 
 int main(int, const char **)
 {
-    //train(); // 7634 -43 297 -327
-    simpleMasktest();
+    //train();
+    //simpleMasktest();
     //generateLearningData();
-    //cardcheck();
+    cardcheck();
     //blackrecognitiontest();
 }
-

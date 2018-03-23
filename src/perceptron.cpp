@@ -31,17 +31,7 @@ bool Perceptron::eval(std::vector<RGB> pixels) const
     
     for(iterPixel = pixels.begin(); iterPixel < pixels.end(); iterPixel++){
         for(iterWeightcolor = iterWeightpixel->begin(); iterWeightcolor <  iterWeightpixel->end(); iterWeightcolor++){
-            RGB color = *iterPixel;
             value += (*iterWeightcolor) * int((*iterPixel).r) + *(++iterWeightcolor) * int((*iterPixel).g) + *(++iterWeightcolor) * int((*iterPixel).b);
-            /*
-            std::cout << "List for eval: " << std::endl;
-            std::cout << (*iterWeightcolor) << std::endl;
-            std::cout << int(color.r) <<std::endl;
-            std::cout << *(++iterWeightcolor) <<std::endl;
-            std::cout << int(color.g) <<std::endl;
-            std::cout << *(++iterWeightcolor) <<std::endl;
-            std::cout << int(color.b) <<std::endl;
-             */
         }
         iterWeightpixel++;
     }
@@ -163,7 +153,7 @@ Weights Perceptron::train()
     std::cout << "Training Perceptron... " << "\n" << std::endl;
     
     for(int j = 0; j < 50; j++){
-        for(int i = 30; i < 40; i += 2){
+        for(int i = 0; i < 40; i += 2){
             //Load new Image and Mask
             std::string fileOriginal = ReadNthLinefromFile("../../trainingdata/training_list.txt", i);
             std::string fileMask = ReadNthLinefromFile("../../trainingdata/training_list.txt", i+1);
@@ -178,9 +168,9 @@ Weights Perceptron::train()
             mask.readPNM(location,errmsg);
             
             if(!mask.isAllocated())
-                std::cerr << "ERROR, mask not allocated!" << std::endl;
+                std::cerr << "ERROR in train, mask not allocated!" << std::endl;
             if(!im.isAllocated())
-                std::cerr << "ERROR, im not allocated!" << std::endl;
+                std::cerr << "ERROR in train, im not allocated!" << std::endl;
             
             if(mask.pixels() != im.pixels()){
                 std::cerr << "Image dimensions don't match" << std::endl;
@@ -199,9 +189,9 @@ Weights Perceptron::train()
                     w = learn(pixels, (mask.at(x0, y0) < RGB(50, 50, 50)));
                 }
             }
+            std::cout << "temporary Weights: " << w << " \n sub-Iteration: " << i/2 << std::endl;
         }
         std::cout << "Weights: " << w << " \n Iteration: " << j << std::endl;
     }
     return w;
 }
-

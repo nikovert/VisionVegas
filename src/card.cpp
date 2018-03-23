@@ -24,6 +24,17 @@ bool Card::readImage(std::string& errmsg, std::string& str)
     return(im.readPNM(str,errmsg));
 }
 
+bool Card::setImage(Image& in)
+{
+    if(!in.isAllocated()) return false;
+    im.create(in.width(), in.height());
+    for(unsigned x0 = 1; x0 < in.width(); x0++){
+        for(unsigned y0 = 1; y0 < in.height(); y0++){
+            im.at(x0, y0) = in.at(x0, y0);
+        }
+    }
+}
+
 bool Card::isBackground(const Point2d& point, uchar red_threshold) const
 {
     if(usingPerceptron){
@@ -58,11 +69,12 @@ bool Card::isBackground(const Point2d& point) const
         return true;
 }
 
+//outdated
 bool Card::detectCardBoundary(std::vector<Point2d>& boundary_points, double distance, uchar threshold, double delta_angle, unsigned max_points)
 {
 	boundary_points.clear();
     if(!im.isAllocated()){
-        std::cerr << "in detectCardBoundary: ERROR, im not allocated" << std::endl;
+        std::cerr << "ERROR in detectCardBoundary: im not allocated" << std::endl;
         return false;
     }
 
@@ -84,7 +96,7 @@ bool Card::detectCardBoundary(std::vector<Point2d>& boundary_points, double dist
             y0 = 0;
             while(y0<im.height() && isBackground(Point2d(x0,y0), threshold)) y0++;
             if(y0<=0 && y0>=im.height()-1){
-                std::cerr << "in detectCardBoundary: ERROR, y0 >0 or y0 > im.height()-1" << std::endl;
+                std::cerr << "ERROR in detectCardBoundary: y0 >0 or y0 > im.height()-1" << std::endl;
                 return false;
             }
         }
@@ -102,7 +114,7 @@ bool Card::detectCardBoundary(std::vector<Point2d>& boundary_points, double dist
 		{
 			angle += delta_angle;
             if(angle>4*pi){
-                std::cerr << "in detectCardBoundary: ERROR, angle > 4*pi" << std::endl;
+                std::cerr << "ERROR in detectCardBoundary: angle > 4*pi" << std::endl;
                 return false;
             }
 		}
@@ -111,8 +123,8 @@ bool Card::detectCardBoundary(std::vector<Point2d>& boundary_points, double dist
 		while(isBackground(Point2d(point.x + distance*cos(angle), point.y + distance*sin(angle)), threshold))
 		{
 			angle -= delta_angle;
-            if(angle>-4*pi){
-                std::cerr << "in detectCardBoundary: ERROR, angle > -4*pi" << std::endl;
+            if(angle<-4*pi){
+                std::cerr << "ERROR in detectCardBoundary: angle > -4*pi" << std::endl;
                 return false;
             }
 		}
@@ -121,7 +133,7 @@ bool Card::detectCardBoundary(std::vector<Point2d>& boundary_points, double dist
 		point = Point2d(point.x + distance*cos(angle), point.y + distance*sin(angle));
 		boundary_points.push_back(point);
         if(boundary_points.size() > max_points){
-            std::cerr << "in detectCardBoundary: ERROR, located to many boundary points" << std::endl;
+            std::cerr << "ERROR in detectCardBoundary: located to many boundary points" << std::endl;
             return false;
         }
 
@@ -143,8 +155,10 @@ int Card::getValue(void)
 {
 	if(!im.isAllocated()) return 0;
 
-	// TODO: recognize card value
+    BlobDetector bdetector = BlobDetector();
+    bdetector.adddefaultRange();
+    std::vector<BLOB> b = bdetector.findBlobs(im);
 
-	return 20;
+	return b.size();
 }
 

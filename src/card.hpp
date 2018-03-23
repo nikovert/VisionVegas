@@ -13,6 +13,7 @@
 #include <geom.hpp>
 #include <vector>
 #include <perceptron.hpp>
+#include <blobdetector.hpp>
 
 class Card
 {
@@ -24,7 +25,8 @@ public:
     Card() : usingPerceptron(false) {}
 	bool updateImage(std::string& errmsg);
     bool readImage(std::string& errmsg, std::string& str);
-	void cloneImageTo(Image& out) const { out = im; }
+	void cloneImageTo(Image& out) const {out = im;}
+    bool setImage(Image& in);
 	bool isBackground(const Point2d& point, uchar red_threshold) const;
     bool isBackground(const Point2d& point) const;
 	bool detectCardBoundary(std::vector<Point2d>& boundary_points, double distance=20, uchar threshold=128, double delta_angle=1.0, unsigned max_points=500);

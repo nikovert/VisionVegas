@@ -10,6 +10,7 @@
 
 #include <card.hpp>
 #include <vector>
+#include <queue>
 
 #include <blobdetector.hpp>
 
@@ -26,22 +27,31 @@ class Carddetector
 {
 private:
     Image crop;
-    BinaryImage binmask;
+    BinaryImage binmask; //holds binary version of mask //true for card, false for backround
     Image mask;
     bool debug;
 public:
     std::string currentCard;
     Card playingcard;
+    
+private:
+    bool fillHoles();
+    bool updateMask(RGB replace);// Sets binmask to maks
+    bool detectCard(std::vector<Point2d>& boundary_points, double distance=20, double delta_angle=1.0, unsigned max_points=500); //used by  isolate
+public:
     Carddetector(Card& ca) {playingcard = ca; debug = false; blob = BlobDetector();}
+    
     void setdebug() {debug = true;}
     bool isdebug() {return debug;}
+    
     bool isolateCard();
-    bool maskCard();
     bool simpleMask();
     void retrieveCrop(Image& im) {im = crop;}
+    void retrieveMask(Image& im) {im = mask;}
+    void retrieveMask(BinaryImage& im) {im = binmask;}
     
     BlobDetector blob;
-    void initBlobdetection() {blob.reset(); blob.adddefaultRange();};
+    void initBlobdetection() {blob.reset(); blob.adddefaultRange();}
     void detectBlobs() {blob.findBlobs(crop); blob.retrieveBlobed(crop);}
 };
 #endif /* carddetector_h */
