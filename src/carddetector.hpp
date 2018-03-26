@@ -30,6 +30,7 @@ private:
     BinaryImage binmask; //holds binary version of mask //true for card, false for backround
     Image mask;
     bool debug;
+    RGB defaultBackround = RGB(0, 0, 0);
 public:
     std::string currentCard;
     Card playingcard;
@@ -43,13 +44,14 @@ public:
     
     void setdebug() {debug = true;}
     bool isdebug() {return debug;}
-    
+    bool isolateCard_Translationonly();
+    bool isolateCard_Rotationonly();
     bool isolateCard();
-    bool simpleMask();
+    bool simpleMask();  //creates a mask from the playingcard image
     void retrieveCrop(Image& im) {im = crop;}
     void retrieveMask(Image& im) {im = mask;}
     void retrieveMask(BinaryImage& im) {im = binmask;}
-    
+    void setCard(Card& card) {playingcard = card;}
     BlobDetector blob;
     void initBlobdetection() {blob.reset(); blob.adddefaultRange();}
     void detectBlobs() {blob.findBlobs(crop); blob.retrieveBlobed(crop);}

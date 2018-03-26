@@ -33,6 +33,7 @@ bool Card::setImage(Image& in)
             im.at(x0, y0) = in.at(x0, y0);
         }
     }
+    return true;
 }
 
 bool Card::isBackground(const Point2d& point, uchar red_threshold) const
