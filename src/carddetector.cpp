@@ -10,6 +10,43 @@
 
 Point2d mintranslation(Vector3d corner1,Vector3d corner2,Vector3d corner3,Vector3d corner4);
 
+bool threshhold(RGB pixel)
+{
+    if(pixel.r > 120 && pixel.g > 120 && pixel.b > 100)
+        return true;
+    
+    return false;
+}
+
+bool Carddetector::isolateValue(){
+    if(!crop.isAllocated()){
+        std::cerr << "ERROR in isolateValue: crop isn't Allocated" << std::endl;
+        return false;
+    }
+    double divisionX = 6;
+    double divisionY = 7;
+    
+    value.create(((double)crop.width()/divisionX) , ((double)crop.height()/divisionY), RGB(255, 255, 255));
+    
+    unsigned startX = ((double)crop.width() * (divisionX-1))/divisionX;
+    unsigned startY = ((double)crop.height() * (divisionY-1))/divisionY;
+    
+    for(unsigned x0 = startX; x0 < crop.width()-5; x0++){ //minus 5, to get rid of error on the edge
+        for(unsigned y0 = startY; y0 < crop.height()-5; y0++){
+            try {
+                if(!(crop.at(x0, y0) == defaultBackround || threshhold(crop.at(x0, y0)))){
+                    //value.at(x0 - startX, y0 - startY) = crop.at(x0, y0);
+                    value.at(x0 - startX, y0 - startY) = RGB(0, 0, 0);
+                }
+            } catch (std::out_of_range) {
+                std::cerr << "out of dimensions in isolateValue: caught exception"<< std::endl;
+                return false;
+            }
+            
+        }
+    }
+}
+
 bool Carddetector::isolateCard()
 {
     if(!isolateCard_Rotationonly()){
@@ -184,12 +221,13 @@ bool Carddetector::isolateCard_Translationonly()
                 else
                     newPixel = pixel3d;
                 
-                if(newPixel.x > cardimage.width() || newPixel.y > cardimage.height() || newPixel.x < 0 || newPixel.y < 0){
+                try {
+                    cardimage.at(newPixel.x, newPixel.y) = pic.at(x0, y0);
+                } catch (std::out_of_range) {
                     std::cerr << "out of dimensions: " << newPixel.x << " " << newPixel.y << std::endl;
-                    std::cerr << std::endl;
                     return false;
                 }
-                cardimage.at(newPixel.x, newPixel.y) = pic.at(x0, y0);
+                
             }
         }
     }
@@ -287,12 +325,12 @@ bool Carddetector::isolateCard_Rotationonly()
                 else
                     newPixel = pixel3d;
                 
-                if(newPixel.x > cardimage.width() || newPixel.y > cardimage.height() || newPixel.x < 0 || newPixel.y < 0){
+                try {
+                    cardimage.at(newPixel.x, newPixel.y) = pic.at(x0, y0);
+                } catch (std::out_of_range) {
                     std::cerr << "out of dimensions: " << newPixel.x << " " << newPixel.y << std::endl;
-                    std::cerr << std::endl;
                     return false;
                 }
-                cardimage.at(newPixel.x, newPixel.y) = pic.at(x0, y0);
             }
         }
     }

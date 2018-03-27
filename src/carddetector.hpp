@@ -20,8 +20,17 @@ private:
     Image crop;
     BinaryImage binmask; //holds binary version of mask //true for card, false for backround
     Image mask;
+    Image value;
     bool debug;
     RGB defaultBackround = RGB(0, 0, 0);
+    std::vector<RGB_RANGE> colorRanges;
+    
+    //some  RGB colors
+    RGB darkred = RGB(150, 0, 0);
+    RGB lightred = RGB(255, 100, 100);
+    RGB black = RGB(0,0,0);
+    RGB grey = RGB(50,50,50);
+    
 public:
     std::string currentCard;
     Card playingcard;
@@ -33,6 +42,7 @@ private:
     bool isolateCard_Translationonly(); //used by isolate
     bool isolateCard_Rotationonly(); //used by isolate
     std::vector<Point2d> detectCorners(); //finds the corners, used by isolate
+    
 public:
     Carddetector(Card& ca) {playingcard = ca; debug = false; blob = BlobDetector();}
     
@@ -42,10 +52,12 @@ public:
     bool simpleMask();  //creates a mask from the playingcard image
     void retrieveCrop(Image& im) {im = crop;}
     void retrieveMask(Image& im) {im = mask;}
+    void retrieveValue(Image& im) {im = value;}
     void retrieveMask(BinaryImage& im) {im = binmask;}
     void setCard(Card& card) {playingcard = card;}
     BlobDetector blob;
     void initBlobdetection() {blob.reset(); blob.adddefaultRange();}
     void detectBlobs() {blob.findBlobs(crop); blob.retrieveBlobed(crop);}
+    bool isolateValue();
 };
 #endif /* carddetector_h */

@@ -83,8 +83,8 @@ bool cardcheck(){
         detector.initBlobdetection();
         
         if(detector.isolateCard()){
-            
-            detector.retrieveCrop(im);
+            detector.isolateValue();
+            detector.retrieveValue(im);
             // get value of the card
             //std::cout << "Card value: " << card.getValue() << "\n";
             success++;
