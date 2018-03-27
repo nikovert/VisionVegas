@@ -82,32 +82,22 @@ bool cardcheck(){
         //detector.setdebug();
         detector.initBlobdetection();
         
-        if(detector.isolateCard_Rotationonly()){
+        if(detector.isolateCard()){
             
             detector.retrieveCrop(im);
-            card.setImage(im);
-            
-            Carddetector newdetector(card);
-            
-            if(newdetector.isolateCard_Translationonly()){
-                newdetector.retrieveCrop(im);
-                card.setImage(im);
-                // get value of the card
-                //std::cout << "Card value: " << card.getValue() << "\n";
-                success++;
-                std::string output;
-                // write image to disk
-                if(detector.isdebug())
-                    output = std::to_string(i) + "_output_debug_" + file;
-                else
-                    output = std::to_string(i) + "_output_" + file;
-                if(!im.writePNM(output,errmsg)) return false;
-            }
+            // get value of the card
+            //std::cout << "Card value: " << card.getValue() << "\n";
+            success++;
+            std::string output;
+            // write image to disk
+            if(detector.isdebug())
+                output = std::to_string(i) + "_output_debug_" + file;
             else
-                std::cout << "Card Failed during Translation" << "\n";
+                output = std::to_string(i) + "_output_" + file;
+            if(!im.writePNM(output,errmsg)) return false;
         }
         else
-            std::cout << "Card Failed during Rotation" << "\n";
+            std::cout << "Card Failed!" << "\n";
         
         std::cout << "\n";
     }

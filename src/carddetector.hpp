@@ -14,15 +14,6 @@
 
 #include <blobdetector.hpp>
 
-/*
- Please use as follows
- 
- Carddetector detector(card);   //init
- detector.isolateCard();        //isolate
- detector.initBlobdetection();   //configure the blobdetection
- detetor.detectBlobs();         //detect blobs
- detector.retrieveCrop(im);     //retrieve
- */
 class Carddetector
 {
 private:
@@ -39,13 +30,14 @@ private:
     bool fillHoles();
     bool updateMask(RGB replace);// Sets binmask to maks
     bool detectCard(std::vector<Point2d>& boundary_points, double distance=20, double delta_angle=1.0, unsigned max_points=500); //used by  isolate
+    bool isolateCard_Translationonly(); //used by isolate
+    bool isolateCard_Rotationonly(); //used by isolate
+    std::vector<Point2d> detectCorners(); //finds the corners, used by isolate
 public:
     Carddetector(Card& ca) {playingcard = ca; debug = false; blob = BlobDetector();}
     
     void setdebug() {debug = true;}
     bool isdebug() {return debug;}
-    bool isolateCard_Translationonly();
-    bool isolateCard_Rotationonly();
     bool isolateCard();
     bool simpleMask();  //creates a mask from the playingcard image
     void retrieveCrop(Image& im) {im = crop;}
