@@ -11,6 +11,7 @@
 #include <card.hpp>
 #include <vector>
 #include <queue>
+#include <stdexcept>
 
 #include <blobdetector.hpp>
 
