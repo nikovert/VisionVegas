@@ -36,15 +36,16 @@ bool Carddetector::isolateValue(){
             try {
                 if(!(crop.at(x0, y0) == defaultBackround || threshhold(crop.at(x0, y0)))){
                     //value.at(x0 - startX, y0 - startY) = crop.at(x0, y0);
-                    value.at(x0 - startX, y0 - startY) = RGB(0, 0, 0);
+                    value.at(value.width() - (x0 - startX), value.height() - (y0 - startY)) = RGB(0, 0, 0);
+                    //value.at(x0 - startX, y0 - startY) = RGB(0, 0, 0);
                 }
             } catch (std::out_of_range) {
                 std::cerr << "out of dimensions in isolateValue: caught exception"<< std::endl;
                 return false;
             }
-            
         }
     }
+    return true;
 }
 
 bool Carddetector::isolateCard()
@@ -429,7 +430,7 @@ std::vector<Point2d> Carddetector::detectCorners()
 
 
 //overwrites mask
-bool Carddetector::fillHoles()
+bool Carddetector::fillHoles(RGB target, RGB replace)
 {
     /*
      Flood-fill (node, target-color, replacement-color):
@@ -451,8 +452,6 @@ bool Carddetector::fillHoles()
     
     //simpleMask needs to have been perfomed on mask
     if(!mask.isAllocated()) return false;
-    RGB target(0, 0, 0);
-    RGB replace(150,150,0);
     
     std::queue<Point2d> queue; //Step 3
     queue.push(Point2d(0,0)); //Step 4

@@ -36,7 +36,7 @@ public:
     Card playingcard;
     
 private:
-    bool fillHoles();
+    bool fillHoles(RGB target = RGB(0, 0, 0), RGB replace = RGB(150,150,0));
     bool updateMask(RGB replace);// Sets binmask to maks
     bool detectCard(std::vector<Point2d>& boundary_points, double distance=20, double delta_angle=1.0, unsigned max_points=500); //used by  isolate
     bool isolateCard_Translationonly(); //used by isolate
