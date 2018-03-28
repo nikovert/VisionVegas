@@ -8,6 +8,7 @@
 #include <image.hpp>
 #include <card.hpp>
 #include <carddetector.hpp>
+#include <player.hpp>
 
 #include <cstdio>
 #include <cstdarg>
@@ -379,9 +380,5 @@ void train(){
 
 int main(int, const char **)
 {
-    //train();
-    //simpleMasktest();
-    //generateLearningData();
-    cardcheck();
-    //blackrecognitiontest();
+	player();
 }
