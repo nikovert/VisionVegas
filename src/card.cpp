@@ -145,10 +145,10 @@ bool Card::detectCardBoundary(std::vector<Point2d>& boundary_points, double dist
 
 bool Card::loadPerceptron()
 {
-    percep.setW(percep.readWeights("../../weights"));
+    percep.setW(percep.readBackgroundWeights("../../weights"));
     if(percep.getW().weight0 == 0) return false;
     usingPerceptron = true;
-    std::cout << "Using weights: " << percep.getW() << std::endl;
+    //std::cout << "Using weights: " << percep.getW() << std::endl;
     return true;
 }
 

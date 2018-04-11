@@ -12,18 +12,20 @@
 #include <vector>
 #include <queue>
 #include <stdexcept>
+#include <cmath>
 
 #include <blobdetector.hpp>
 
 class Carddetector
 {
 private:
+    int valueWidth = 26, valueHeight = 36; //!!!perceptron gets trained with a static number of weights, so DO NOT change this value.
     Image crop;
-    BinaryImage binmask; //holds binary version of mask //true for card, false for backround
+    BinaryImage binmask; //holds binary version of mask //true for card, false for background
     Image mask;
     Image value;
     bool debug;
-    RGB defaultBackround = RGB(0, 0, 0);
+    RGB defaultBackground = RGB(0, 0, 0);
     std::vector<RGB_RANGE> colorRanges;
     
     //some  RGB colors

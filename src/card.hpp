@@ -19,7 +19,7 @@ class Card
 {
 private:
 	Image im;
-    Perceptron percep;
+    BackgroundPerceptron percep;
     bool usingPerceptron; // can be removed in later versions once Perceptron works;
 public:
     Card() : usingPerceptron(false) {}

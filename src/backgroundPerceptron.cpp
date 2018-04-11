@@ -1,5 +1,5 @@
 //
-//  perceptron.cpp
+//  backgroundPerceptron.cpp
 //  recognition
 //
 //  Created by Niko Vertovec on 19.03.18.
@@ -7,7 +7,7 @@
 
 #include "perceptron.hpp"
 
-std::ostream& operator<<(std::ostream& os, const Weights& w)
+std::ostream& operator<<(std::ostream& os, const BackgroundWeights& w)
 {
     os << w.weight0 << "\n";
     for (auto &weight : w.w) {
@@ -19,7 +19,7 @@ std::ostream& operator<<(std::ostream& os, const Weights& w)
     return(os);
 }
 
-bool Perceptron::eval(std::vector<RGB> pixels) const
+bool BackgroundPerceptron::eval(std::vector<RGB> pixels) const
 {
     int value = w.weight0;
     
@@ -38,7 +38,7 @@ bool Perceptron::eval(std::vector<RGB> pixels) const
     return value >= 0;
 }
 
-bool Perceptron::saveWeights(std::string location)
+bool BackgroundPerceptron::saveWeights(std::string location)
 {
     std::ofstream Weightfile;
     Weightfile.open(location);
@@ -59,9 +59,9 @@ bool Perceptron::saveWeights(std::string location)
     return true;
 }
 
-Weights Perceptron::readWeights(std::string location)
+BackgroundWeights BackgroundPerceptron::readBackgroundWeights(std::string location)
 {
-    Weights w;
+    BackgroundWeights w;
     std::ifstream in(location.c_str());
     
     std::string str;
@@ -89,21 +89,21 @@ Weights Perceptron::readWeights(std::string location)
     return w;
 }
 
-Weights Perceptron::getW()
+BackgroundWeights BackgroundPerceptron::getW()
 {
     return w;
 }
 
-void Perceptron::setW(Weights weight)
+void BackgroundPerceptron::setW(BackgroundWeights weight)
 {
     w = weight;
 }
 
-Weights Perceptron::learn(std::vector<RGB> pixels, bool target)
+BackgroundWeights BackgroundPerceptron::learn(std::vector<RGB> pixels, bool target)
 {
     //Weights weight;
     //std::cout << "pixelSize: " << pixels.size();
-    bool y = eval(pixels); //is backround
+    bool y = eval(pixels); //is background
     
     w.weight0 = w.weight0 + (target-y) * 1;
     
@@ -129,7 +129,7 @@ Weights Perceptron::learn(std::vector<RGB> pixels, bool target)
     return w;
 }
 
-std::string ReadNthLinefromFile(const std::string& filename, int N)
+static std::string ReadNthLinefromFile(const std::string& filename, int N)
 {
     std::ifstream in(filename.c_str());
     
@@ -145,7 +145,7 @@ std::string ReadNthLinefromFile(const std::string& filename, int N)
     return s;
 }
 
-Weights Perceptron::train()
+BackgroundWeights BackgroundPerceptron::train()
 {
     Image im, mask;
     std::string errmsg;

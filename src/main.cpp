@@ -47,6 +47,51 @@ std::string ReadNthLine(const std::string& filename, int N)
     return s;
 }
 
+bool cardcheck2(){
+    Card card;
+    Image im;
+    card.loadPerceptron();
+    std::string errmsg;
+    
+    std::cout << "Playingcard checks: " << "\n" << std::endl;
+    double success(0), counter(0);
+    for(int i = 0; i < 123; i++){
+        counter++;
+        std::string str = "../../card_images/";
+        std::string file = ReadNthLine("../../card_images/card_list.txt", i);
+        std::cout << "Reading File: " << file << std::endl;
+        
+        str.append(file);
+        card.readImage(errmsg, str);
+        
+        Carddetector detector(card);
+        detector.currentCard = file;
+        
+        // create a copy of the loaded image
+        card.cloneImageTo(im);
+        
+        if(detector.isolateCard()){
+            detector.isolateValue();
+            detector.retrieveValue(im);
+            
+            // get value of the card
+            //std::cout << "Card value: " << card.getValue() << "\n";
+            success++;
+            std::string output;
+            
+            // write image to disk
+            output = std::to_string(i) + "_output_" + file;
+            if(!im.writePNM(output,errmsg)) return false;
+        }
+        else
+            std::cout << "Card Failed!" << "\n";
+        
+        std::cout << "\n";
+    }
+    std::cout << "success rate: " << success/counter * 100 << "%" << std::endl;
+    return true;
+}
+
 bool cardcheck(){
     Card card;
     card.loadPerceptron();
@@ -364,10 +409,10 @@ void blackrecognitiontest()
 }
 
 void train(){
-    Perceptron p;
-    p.setW(p.readWeights("../../weights"));
+    BackgroundPerceptron p;
+    p.setW(p.readBackgroundWeights("../../weights"));
     
-    Weights w = p.getW();
+    BackgroundWeights w = p.getW();
     std::cout << std::endl;
     std::cout << "old weights: " << w << std::endl;
     
@@ -379,9 +424,5 @@ void train(){
 
 int main(int, const char **)
 {
-    //train();
-    //simpleMasktest();
-    //generateLearningData();
-    cardcheck();
-    //blackrecognitiontest();
+    cardcheck2();
 }

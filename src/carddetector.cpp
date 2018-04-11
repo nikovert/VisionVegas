@@ -26,18 +26,19 @@ bool Carddetector::isolateValue(){
     double divisionX = 6;
     double divisionY = 7;
     
-    value.create(((double)crop.width()/divisionX) , ((double)crop.height()/divisionY), RGB(255, 255, 255));
+    double width = ((double)crop.width()/divisionX);
+    double height = ((double)crop.height()/divisionY);
+    
+    value.create(width, height, RGB(255, 255, 255));
     
     unsigned startX = ((double)crop.width() * (divisionX-1))/divisionX;
     unsigned startY = ((double)crop.height() * (divisionY-1))/divisionY;
     
-    for(unsigned x0 = startX; x0 < crop.width()-5; x0++){ //minus 5, to get rid of error on the edge
-        for(unsigned y0 = startY; y0 < crop.height()-5; y0++){
+    for(unsigned x0 = startX; x0 < crop.width()-divisionX; x0++){ //minus divisionX, to get rid of error on the edge
+        for(unsigned y0 = startY; y0 < crop.height()-divisionY; y0++){
             try {
-                if(!(crop.at(x0, y0) == defaultBackround || threshhold(crop.at(x0, y0)))){
-                    //value.at(x0 - startX, y0 - startY) = crop.at(x0, y0);
+                if(!(crop.at(x0, y0) == defaultBackground || threshhold(crop.at(x0, y0)))){
                     value.at(value.width() - (x0 - startX), value.height() - (y0 - startY)) = RGB(0, 0, 0);
-                    //value.at(x0 - startX, y0 - startY) = RGB(0, 0, 0);
                 }
             } catch (std::out_of_range) {
                 std::cerr << "out of dimensions in isolateValue: caught exception"<< std::endl;
@@ -45,6 +46,122 @@ bool Carddetector::isolateValue(){
             }
         }
     }
+    
+    //smooth image
+    for(unsigned x = 1; x < value.width()-1; x++)
+        for(unsigned y = 1; y < value.height()-1; y++){
+            try {
+                if(x == 0 || y == 0 || x == value.width()-1 || y == value.height()-1)
+                    value.at(x, y) = RGB(255, 255, 255);
+                else{
+                    if(value.at(x, y) == RGB(0, 0, 0)){
+                        short surroundingPixel(0); //how many surronding pixels are also black
+                        if(value.at(x+1, y) == RGB(255, 255, 255))
+                            surroundingPixel++;
+                        if(value.at(x-1, y) == RGB(255, 255, 255))
+                            surroundingPixel++;
+                        if(value.at(x, y+1) == RGB(255, 255, 255))
+                            surroundingPixel++;
+                        if(value.at(x, y-1) == RGB(255, 255, 255))
+                            surroundingPixel++;
+                        if(value.at(x+1, y+1) == RGB(255, 255, 255))
+                            surroundingPixel++;
+                        if(value.at(x+1, y-1) == RGB(255, 255, 255))
+                            surroundingPixel++;
+                        if(value.at(x-1, y-1) == RGB(255, 255, 255))
+                            surroundingPixel++;
+                        if(value.at(x-1, y+1) == RGB(255, 255, 255))
+                            surroundingPixel++;
+         
+                        if(surroundingPixel >= 7)
+                            value.at(x, y) = RGB(255, 255, 255);
+                    }
+                    if(value.at(x, y) == RGB(255, 255, 255)){
+                        short surroundingPixel(0); //how many surronding pixels are also black
+                         if(value.at(x+1, y) == RGB(0, 0, 0))
+                            surroundingPixel++;
+                         if(value.at(x-1, y) == RGB(0, 0, 0))
+                            surroundingPixel++;
+                         if(value.at(x, y+1) == RGB(0, 0, 0))
+                            surroundingPixel++;
+                         if(value.at(x, y-1) == RGB(0, 0, 0))
+                            surroundingPixel++;
+                         if(value.at(x+1, y+1) == RGB(0, 0, 0))
+                            surroundingPixel++;
+                         if(value.at(x+1, y-1) == RGB(0, 0, 0))
+                            surroundingPixel++;
+                         if(value.at(x-1, y-1) == RGB(0, 0, 0))
+                            surroundingPixel++;
+                         if(value.at(x-1, y+1) == RGB(0, 0, 0))
+                            surroundingPixel++;
+         
+                        if(surroundingPixel >= 7)
+                            value.at(x, y) = RGB(0, 0, 0);
+                    }
+                }
+            } catch (std::out_of_range) {
+                std::cerr << "out of dimensions in isolateValue: caught exception"<< std::endl;
+                return false;
+            }
+        }
+    
+    //recrop image ___________________________________________________________________________________________________________________________
+
+    //repeat crop
+    unsigned maxX(0), maxY(0), minX(value.width()), minY(value.height());
+    for(unsigned x = 0; x < value.width(); x++)
+        for(unsigned y = 0; y < value.height(); y++){
+            if(value.at(x, y) == RGB(0, 0, 0) && x > maxX)
+                maxX = x;
+            if(value.at(x, y) == RGB(0, 0, 0) && y > maxY)
+                maxY = y;
+            if(value.at(x, y) == RGB(0, 0, 0) && x < minX)
+                minX = x;
+            if(value.at(x, y) == RGB(0, 0, 0) && y < minY)
+                minY = y;
+    
+        }
+    std::cout << "max: " << maxX << " " << maxY << " min: " << minX << " " <<  minY << std::endl;
+    crop.create(maxX-minX, maxY-minY, RGB(255,255,255));
+    
+    for(unsigned x0 = 0; x0 < maxX - minX; x0++){ //minus 5, to get rid of error on the edge
+        for(unsigned y0 = 0; y0 < maxY - minY; y0++){
+            try {
+                if((value.at(x0 + minX, y0 + minY) == RGB(0,0,0))){
+                    crop.at(x0, y0) = RGB(0, 0, 0);
+                }
+            } catch (std::out_of_range) {
+                std::cerr << "out of dimensions in isolateValue: caught exception"<< std::endl;
+                return false;
+            }
+        }
+    }
+    value.create(valueWidth, valueHeight, RGB(255,255,255));
+    
+    double s1 = value.width()/crop.width();
+    double s2 = value.height()/crop.height();
+    
+    //std::cout << "cropValue.x: " << cropValue.x << " cropValue.y: " << cropValue.y << std::endl;
+    //std::cout << "s1: " << s1 << " s2: " << s2 << std::endl;
+    
+    Matrix3x3 scalingMatrix(s1, 0, 0, 0, s2, 0, 0, 0, 1);
+    
+    for(unsigned x0 = 1; x0 < crop.width(); x0++){
+        for(unsigned y0 = 1; y0 < crop.height(); y0++){
+            Vector3d pixel3d(x0,y0,1);
+            Vector3d newPixel;
+            newPixel = scalingMatrix * pixel3d;
+            try {
+                value.at(round(newPixel.x), round(newPixel.y)) = crop.at(x0, y0);
+            } catch (std::out_of_range) {
+                std::cerr << "out of dimensions: " << newPixel.x << " " << newPixel.y << std::endl;
+                return false;
+            }
+            
+        }
+    }
+    
+    
     return true;
 }
 
@@ -70,7 +187,7 @@ bool Carddetector::isolateCard()
     
     for(unsigned x0 = pic.width()-1; x0 > 0; x0--){
         for(unsigned y0 = pic.height()-1; y0 > 0; y0--){
-            if(!(pic.at(x0, y0) == defaultBackround)){
+            if(!(pic.at(x0, y0) == defaultBackground)){
                 if(cropValue.x < x0)
                     cropValue.x = x0;
                 if(cropValue.y < y0)
@@ -78,13 +195,33 @@ bool Carddetector::isolateCard()
             }
         }
     }
-    std::cout << "cropValue: " << cropValue << std::endl;
+    //std::cout << "cropValue: " << cropValue << std::endl;
     
-    crop.create(cropValue.x, cropValue.y);
+    //scale to 200 by 310
     
-    for(unsigned x0 = 1; x0 < crop.width(); x0++){
-        for(unsigned y0 = 1; y0 < crop.height(); y0++){
-            crop.at(x0, y0) = pic.at(x0, y0);
+    crop.create(200, 310);
+    
+    double s1 = crop.width()/cropValue.x;
+    double s2 = crop.height()/cropValue.y;
+    
+    //std::cout << "cropValue.x: " << cropValue.x << " cropValue.y: " << cropValue.y << std::endl;
+    //std::cout << "s1: " << s1 << " s2: " << s2 << std::endl;
+    
+    Matrix3x3 scalingMatrix(s1, 0, 0, 0, s2, 0, 0, 0, 1);
+    
+    
+    for(unsigned x0 = 1; x0 < cropValue.x; x0++){
+        for(unsigned y0 = 1; y0 < cropValue.y; y0++){
+            Vector3d pixel3d(x0,y0,1);
+            Vector3d newPixel;
+            newPixel = scalingMatrix * pixel3d;
+            try {
+                crop.at(round(newPixel.x), round(newPixel.y)) = pic.at(x0, y0);
+            } catch (std::out_of_range) {
+                std::cerr << "out of dimensions: " << newPixel.x << " " << newPixel.y << std::endl;
+                return false;
+            }
+            
         }
     }
     return true;
@@ -193,7 +330,7 @@ bool Carddetector::isolateCard_Translationonly()
     Vector3d cornerVec4(corner4.x, corner4.y, 1);
     
     Point2d translation = mintranslation(cornerVec1,cornerVec2,cornerVec3,cornerVec4);
-    std::cout << "translation: " << translation << std::endl;
+    //std::cout << "translation: " << translation << std::endl;
     
     Matrix3x3 translationMatrix(1,0,-translation.x, 0,1,-translation.y, 0,0,1);
     
@@ -208,9 +345,7 @@ bool Carddetector::isolateCard_Translationonly()
     
     Image cardimage;
     
-    cardimage.create(pic.width(), pic.height(), defaultBackround); //set default backround
-    
-    std::cerr << "writing Card: " << currentCard;
+    cardimage.create(pic.width(), pic.height(), defaultBackground); //set default background
     for(unsigned x0 = 1; x0 < pic.width(); x0++){
         for(unsigned y0 = 1; y0 < pic.height(); y0++){
             Point2d pixel(x0, y0);
@@ -234,8 +369,6 @@ bool Carddetector::isolateCard_Translationonly()
     }
     std::string errmsg;
     crop = cardimage;
-    
-    std::cerr << " ... success!" << std::endl;
     return true;
 }
 
@@ -271,12 +404,12 @@ bool Carddetector::isolateCard_Rotationonly()
     if(line2_angle < 0) line2_angle += 360.0;
     
     double rotation_angle_error = std::abs(line4_angle - line2_angle)/2;
-    std::cout << "line4 angle: " << line4_angle << std::endl;
-    std::cout << "line2 angle: " << line2_angle << std::endl;
-    std::cout << "Rotation angle error: " << rotation_angle_error << std::endl;
+    //std::cout << "line4 angle: " << line4_angle << std::endl;
+    //std::cout << "line2 angle: " << line2_angle << std::endl;
+    //std::cout << "Rotation angle error: " << rotation_angle_error << std::endl;
     if(rotation_angle_error > 175.0) rotation_angle_error = std::abs(rotation_angle_error-180);
     if(std::abs(rotation_angle_error) > 5.0){
-        std::cout << "Angles don't match!" << std::endl;
+        std::cerr << "Angles don't match!" << std::endl;
         return false;
     }
     
@@ -285,8 +418,8 @@ bool Carddetector::isolateCard_Rotationonly()
     
     double rotation_angle = (line2_angle + line4_angle)/2;
     if(flip) rotation_angle += 90;
-    std::cout << "flip: " << flip << std::endl;
-    std::cout << "rotate by " << rotation_angle << std::endl;
+    //std::cout << "flip: " << flip << std::endl;
+    //std::cout << "rotate by " << rotation_angle << std::endl;
     
     rotation_angle = rotation_angle *(PI/180);
     Matrix3x3 rotationMatrix(cos(rotation_angle),-sin(rotation_angle),0, sin(rotation_angle),cos(rotation_angle),0, 0,0,1);
@@ -312,7 +445,7 @@ bool Carddetector::isolateCard_Rotationonly()
     
     Image cardimage;
     
-    cardimage.create(pic.width(), pic.height(), defaultBackround); //set default backround
+    cardimage.create(pic.width(), pic.height(), defaultBackground); //set default background
     
     std::cerr << "writing Card: " << currentCard;
     for(unsigned x0 = 1; x0 < pic.width(); x0++){
@@ -349,7 +482,7 @@ std::vector<Point2d> Carddetector::detectCorners()
     std::vector<Point2d> corners;
     std::vector<Point2d> boundary_points;
     if(!detectCard(boundary_points)) return corners;
-    std::cout << boundary_points.size() << " boundary points\n";
+    //std::cout << boundary_points.size() << " boundary points\n";
     
     // find consecutive collinear points and fit a line to them
     std::vector<Point2d>::const_iterator it=boundary_points.begin();
@@ -521,6 +654,7 @@ bool Carddetector::simpleMask()
     if(!fillHoles()) return false;     //fillHoles of mask
     return true;
 }
+
 
 Point2d mintranslation(Vector3d corner1,Vector3d corner2,Vector3d corner3,Vector3d corner4){
     //x
