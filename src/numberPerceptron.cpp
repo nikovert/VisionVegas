@@ -9,6 +9,7 @@
 
 std::ostream& operator<<(std::ostream& os, const NumberWeights& w)
 {
+    //CHECK
     os << w.weight0 << "\n";
     for (auto &weight : w.w) {
         os << weight << " ";
@@ -18,11 +19,13 @@ std::ostream& operator<<(std::ostream& os, const NumberWeights& w)
 
 int NumberPerceptron::eval() const
 {
+    //TO DO
     return -1;
 }
 
 bool NumberPerceptron::saveWeights(std::string location)
 {
+    //CHECK
     std::ofstream Weightfile;
     Weightfile.open(location);
     
@@ -42,6 +45,7 @@ bool NumberPerceptron::saveWeights(std::string location)
 
 NumberWeights NumberPerceptron::readNumberWeights(std::string location)
 {
+    //CHECK
     NumberWeights w;
     std::ifstream in(location.c_str());
     
@@ -77,6 +81,7 @@ void NumberPerceptron::setW(NumberWeights weight)
 
 NumberWeights NumberPerceptron::learn(std::vector<RGB> pixels, bool target)
 {
+    //TO DO
     return w;
 }
 
@@ -98,6 +103,7 @@ static std::string ReadNthLinefromFile(const std::string& filename, int N)
 
 NumberWeights NumberPerceptron::train()
 {
+    //TO DO
     return w;
 }
 
