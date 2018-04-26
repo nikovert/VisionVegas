@@ -52,6 +52,7 @@ bool cardcheck2(){
     Image im;
     card.loadPerceptron();
     std::string errmsg;
+    std::string numbers[] = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"};
     
     std::cout << "Playingcard checks: " << "\n" << std::endl;
     double success(0), counter(0);
@@ -73,9 +74,13 @@ bool cardcheck2(){
         if(detector.isolateCard()){
             detector.isolateValue();
             detector.retrieveValue(im);
+            NumberPerceptron p;
+            p.setW(p.readNumberWeights("../../Numberweights"));
+            p.setImage(im);
+            int result = p.evalMax();
             
             // get value of the card
-            //std::cout << "Card value: " << card.getValue() << "\n";
+            std::cout << "Card value: " << numbers[result] << "\n";
             success++;
             std::string output;
             
@@ -408,7 +413,8 @@ void blackrecognitiontest()
 
 }
 
-void train(){
+void trainBackground()
+{
     BackgroundPerceptron p;
     p.setW(p.readBackgroundWeights("../../weights"));
     
@@ -421,8 +427,21 @@ void train(){
     p.saveWeights("../../weights");
 }
 
+void trainNumbers()
+{
+    NumberPerceptron p;
+    //p.setW(p.readNumberWeights("../../Numberweights"));
+    
+    NumberWeights w = p.getW();
+    std::cout << std::endl;
+    
+    w = p.train();
+    p.saveWeights("../../Numberweights");
+}
+
 
 int main(int, const char **)
 {
+    //trainNumbers();
     cardcheck2();
 }

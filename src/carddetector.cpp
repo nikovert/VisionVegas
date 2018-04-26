@@ -157,11 +157,8 @@ bool Carddetector::isolateValue(){
                 std::cerr << "out of dimensions: " << newPixel.x << " " << newPixel.y << std::endl;
                 return false;
             }
-            
         }
     }
-    
-    
     return true;
 }
 

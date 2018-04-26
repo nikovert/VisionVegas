@@ -36,12 +36,13 @@ class BackgroundPerceptron
 {
 private:
     BackgroundWeights w;
+    
+    BackgroundWeights learn(std::vector<RGB> pixels, bool target); //updates the weights
 public:
     BackgroundPerceptron() {w = BackgroundWeights();};
     bool eval(std::vector<RGB> pixels) const; //returns if the pixel is card(false) or Background(true)
     BackgroundWeights getW();
     void setW(BackgroundWeights weight);
-    BackgroundWeights learn(std::vector<RGB> pixels, bool target); //updates the weights
     BackgroundWeights train(); //requires the learning database
     bool saveWeights(std::string location); //write Weights to txt file;
     BackgroundWeights readBackgroundWeights(std::string location); //read Weights from txt file
@@ -49,10 +50,8 @@ public:
 
 struct NumberWeights
 {
-    std::vector<int> w;
-    int weight0;
-    
-    NumberWeights() :w(676), weight0(0) {}; //assuming we have a 26x36 image
+    std::vector<std::vector<double>> w;
+    NumberWeights() :w(13, std::vector<double>(936, 0)) {}; //assuming we have a 26x36 image and weight0 is at pos 936;
 };
 
 std::ostream& operator<<(std::ostream& os, const NumberWeights& w);
@@ -61,17 +60,24 @@ std::ostream& operator<<(std::ostream& os, const NumberWeights& w);
 class NumberPerceptron
 //-------------------------------------------------------------------------------------
 {
+    // order of Value: {"2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"}
+    //                 { 0 ,  1 ,  2 ,  3 ,  4 ,  5 ,  6 ,  7 ,  8  ,  9 ,  10,  11,  12};
 private:
-    NumberWeights w;
+    NumberWeights weights;
     BinaryImage pic;
+    
+    void softMax(std::vector<double>& vec);
+    NumberWeights learn(int target); //updates the weights
 public:
-    NumberPerceptron() {w = NumberWeights();};
-    int eval() const; //returns the value of the card
+    NumberPerceptron() {weights = NumberWeights();};
+    std::vector<double> eval(); //returns the value % of the card
+    int evalMax(); //returns the value of the card
     NumberWeights getW();
     void setW(NumberWeights weight);
-    NumberWeights learn(std::vector<RGB> pixels, bool target); //updates the weights
     NumberWeights train(); //requires the learning database
     bool saveWeights(std::string location); //write Weights to txt file;
     NumberWeights readNumberWeights(std::string location); //read Weights from txt file
+    bool setImage(BinaryImage& in);
+    bool setImage(Image& in);
 };
 #endif /* perceptron_hpp */

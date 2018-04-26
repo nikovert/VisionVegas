@@ -356,6 +356,7 @@ void BinaryImage::operator=(const BinaryImage& other)
     for(unsigned i=0;i<pixels();i++) m_data[i] = other.at(i);
 }
 
+
 bool BinaryImage::at(unsigned x, unsigned y)
 {
     if(m_data==0 || x>=m_width || y>=m_height) throw std::out_of_range("Image::at(x,y) out of range");
@@ -383,6 +384,116 @@ const bool& BinaryImage::at(unsigned index) const
 void BinaryImage::setPixel(unsigned x, unsigned y, bool value)
 {
     m_data[y*m_width+x] = value;
+}
+
+bool BinaryImage::readNextLine(std::fstream& file, std::stringstream& line_ss, long* linecount)
+{
+    std::string line;
+    if(!file.is_open() || file.eof()) return false;
+    do
+    {
+        std::getline(file,line);
+        if(linecount) (*linecount)++;
+        
+        // cut off the comment part of the string
+        unsigned long sharp_at = line.find_first_of('#');
+        if(sharp_at!=std::string::npos)
+            line = line.substr(0,sharp_at);
+        
+        // clear string if it is all whitespaces
+        bool only_whitespaces = true;
+        for(unsigned i=0;i<line.length();i++)
+            if(!std::isspace(line[i]))
+            {
+                only_whitespaces = false;
+                break;
+            }
+        
+        if(only_whitespaces) line.clear();
+        
+    } while(!file.eof() && line.empty());
+    
+    line_ss.clear();
+    line_ss.str(line);
+    
+    return(!line.empty());
+}
+
+bool BinaryImage::readPNM(const std::string& filename, std::string& errmsg)
+{
+    destroy();
+    
+    unsigned width, height, im_colors=0;
+    
+    std::fstream file;
+    file.open(filename.c_str(),std::ios::in);
+    if(!file.is_open()) { errmsg = std::string("File not found or unable to access: ") + filename; return false; }
+    
+    // read image signature (type)
+    std::stringstream line;
+    readNextLine(file, line);
+    std::string id = line.str();
+    if(id!="P6")
+    {
+        errmsg = "unsupported image file format";
+        return false;
+    }
+    
+    // read image width and height
+    readNextLine(file, line);
+    line >> width; if(line.fail()) { errmsg = "Unable to read image width"; return false; }
+    line >> height; if(line.fail()) { errmsg = "Unable to read image height"; return false; }
+    //std::cout << "image: " << width << "x" << height << "\n";
+    
+    // read image color values
+    readNextLine(file, line);
+    line >> im_colors;
+    if(line.fail()) { errmsg = "Unable to read image colors"; return false; }
+    
+    // check image size
+    std::streampos image_start = file.tellg();
+    file.seekg(0,std::ios::end);
+    std::streampos file_size = file.tellg();
+    unsigned long image_bytes = file_size-image_start;
+    file.seekg(image_start);
+    if(image_bytes != width*height*3)
+    {
+        errmsg = "Unexpected image size\n";
+        return false;
+    }
+    
+    // read image data at once into a temporary raw buffer
+    unsigned char* data = new unsigned char[image_bytes];
+    file.read((char*)data,image_bytes-1);
+    if(!file.good())
+    {
+        errmsg = "Unable to read image data";
+        delete [] data;
+        return false;
+    }
+    RGB* m_dataRGB;
+    // allocate image buffer and copy raw data into it
+    m_dataRGB = new RGB[width*height]; // throws std::bad_alloc if unsuccessful
+    m_width  = width;
+    m_height = height;
+    for(unsigned i=0;i<width*height;i++)
+    {
+        m_dataRGB[i].r = data[3*i+0];
+        m_dataRGB[i].g = data[3*i+1];
+        m_dataRGB[i].b = data[3*i+2];
+    }
+    
+    delete [] data;
+    file.close();
+    m_data = new bool[width*height];
+    for(unsigned i=0;i<pixels();i++){
+        if(m_dataRGB[i].r > 50 && m_dataRGB[i].g > 50 && m_dataRGB[i].b > 50)
+            m_data[i] = true;
+        else
+            m_data[i] = false;
+    }
+    
+    return(true);
 }
 
 

@@ -135,7 +135,7 @@ static std::string ReadNthLinefromFile(const std::string& filename, int N)
     
     std::string s;
     //for performance
-    s.reserve(105);
+    //s.reserve(105);
     
     //skip N lines
     for(int i = 0; i < N; ++i)

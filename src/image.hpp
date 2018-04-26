@@ -52,7 +52,7 @@ bool operator==(RGB& col1, RGB& col2);
 std::ostream& operator<<(std::ostream& os, const RGB& color);
 
 //-------------------------------------------------------------------------------------
-class BinaryImage
+class BinaryImage   //true == white, false == black
 //-------------------------------------------------------------------------------------
 {
 private:
@@ -68,7 +68,6 @@ public:
     void create(unsigned width, unsigned height, const bool fillvalue = false);
     void destroy();
     void operator=(const BinaryImage& other);
-    
 public:
     unsigned width()  const { return(m_width); }
     unsigned height() const { return(m_height); }
@@ -81,6 +80,8 @@ public:
     bool at(unsigned index);
     const bool& at(unsigned index) const;
     void setPixel(unsigned x, unsigned y, bool value);
+    bool readNextLine(std::fstream& file, std::stringstream& line_ss, long* linecount=0);
+    bool readPNM(const std::string& filename, std::string& errmsg);
 };
 
 //-------------------------------------------------------------------------------------
