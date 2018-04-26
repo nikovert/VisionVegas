@@ -19,8 +19,6 @@
 #include <vector>
 #include <perceptron.hpp>
 
-
-
 void error(const char *fmt, ...)
 {
     va_list args;
@@ -47,10 +45,48 @@ std::string ReadNthLine(const std::string& filename, int N)
     return s;
 }
 
+void singleCard(){
+    Card card;
+    Image im;
+    card.loadBackgroundPerceptron();
+    std::string errmsg;
+    
+    std::string numbers[] = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"};
+    
+    std::string str = "../../";
+    std::string file = "captured.pnm";
+    std::cout << "Reading File: " << file << std::endl;
+    
+    str.append(file);
+    //read the image
+    card.readImage(errmsg, str);
+    //create a carddetector with the current card
+    Carddetector detector(card);
+    
+    //isolate the card by detecting the background and rotate
+    if(detector.isolateCard()){
+        detector.isolateValue();    //now cut the card so that only the number of the card is shown
+        detector.retrieveValue(im); //return the croped number
+        NumberPerceptron p;         //load the Perceptron for the value detection
+        p.setW(p.readNumberWeights("../../Numberweights")); //have the perceptron red its weights
+        p.setImage(im);             //add the image to the Perceptron
+        int result = p.evalMax();   //evaluate the value
+        
+        // output value of the card
+        std::cout << "Card value: " << numbers[result] << "\n";
+        
+        // write image to disk
+        std::string output = "output_" + file;
+        if(!im.writePNM(output,errmsg)) return;
+    }
+    else
+        std::cout << "Card Failed!" << "\n";
+}
+
 bool cardcheck2(){
     Card card;
     Image im;
-    card.loadPerceptron();
+    card.loadBackgroundPerceptron();
     std::string errmsg;
     std::string numbers[] = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"};
     
@@ -99,7 +135,7 @@ bool cardcheck2(){
 
 bool cardcheck(){
     Card card;
-    card.loadPerceptron();
+    card.loadBackgroundPerceptron();
     std::string errmsg;
     
     //redirect cout
@@ -162,7 +198,7 @@ bool cardcheck(){
 
 bool simpleMasktest(){
     Card card;
-    card.loadPerceptron();
+    card.loadBackgroundPerceptron();
     std::string errmsg;
     
     std::string str = "/Users/nikovertovec/Documents/VisionVegas/card_images/h8.1.pnm";
@@ -439,9 +475,52 @@ void trainNumbers()
     p.saveWeights("../../Numberweights");
 }
 
+bool histocheck(){
+    Card card;
+    Image im;
+    card.loadBackgroundPerceptron();
+    std::string errmsg;
+    std::string numbers[] = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"};
+    
+    std::cout << "Playingcard checks: " << "\n" << std::endl;
+    double success(0), counter(0);
+    for(int i = 0; i < 123; i++){
+        counter++;
+        std::string str = "../../card_images/";
+        std::string file = ReadNthLine("../../card_images/card_list.txt", i);
+        std::cout << "Reading File: " << file << std::endl;
+        
+        str.append(file);
+        card.readImage(errmsg, str);
+        
+        // create a copy of the loaded image
+        card.cloneImageTo(im);
+        if(im.isAllocated()){
+            im.histequalization();
+        
+        // write image to disk
+        std::string output = std::to_string(i) + "_output_" + file;
+        if(!im.writePNM(output,errmsg)) return false;
+        }
+        std::cout << "\n";
+    }
+    return true;
+}
 
 int main(int, const char **)
 {
-    //trainNumbers();
-    cardcheck2();
+    //singleCard();
+    //cardcheck2();
+    trainBackground();
+    //histocheck();
+    /*
+    Card card;
+    std::string errmsg;
+    std::string str= "../../9.pnm";
+    card.readImage(errmsg, str);
+    Image im;
+    card.cloneImageTo(im);
+    im.histequalization();
+    if(!im.writePNM("outputhist.pnm",errmsg)) return false;
+     */
 }

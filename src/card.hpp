@@ -31,7 +31,7 @@ public:
     bool isBackground(const Point2d& point) const;
 	bool detectCardBoundary(std::vector<Point2d>& boundary_points, double distance=20, uchar threshold=128, double delta_angle=1.0, unsigned max_points=500);
 	int getValue(void);
-    bool loadPerceptron(); //loads the perceptron weights from a file
+    bool loadBackgroundPerceptron(); //loads the perceptron weights from a file
 };
 
 #endif

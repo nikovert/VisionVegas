@@ -121,7 +121,7 @@ bool Carddetector::isolateValue(){
                 minY = y;
     
         }
-    std::cout << "max: " << maxX << " " << maxY << " min: " << minX << " " <<  minY << std::endl;
+    //std::cout << "max: " << maxX << " " << maxY << " min: " << minX << " " <<  minY << std::endl;
     crop.create(maxX-minX, maxY-minY, RGB(255,255,255));
     
     for(unsigned x0 = 0; x0 < maxX - minX; x0++){ //minus 5, to get rid of error on the edge
@@ -176,10 +176,12 @@ bool Carddetector::isolateCard()
     
     Image pic;
     playingcard.cloneImageTo(pic);
+    
     if(!pic.isAllocated()){
         std::cerr << "ERROR in isolateCard: pic isn't Allocated" << std::endl;
         return false;
     }
+    
     Point2d cropValue(0,0);
     
     for(unsigned x0 = pic.width()-1; x0 > 0; x0--){
@@ -444,7 +446,7 @@ bool Carddetector::isolateCard_Rotationonly()
     
     cardimage.create(pic.width(), pic.height(), defaultBackground); //set default background
     
-    std::cerr << "writing Card: " << currentCard;
+    //std::cerr << "writing Card: " << currentCard;
     for(unsigned x0 = 1; x0 < pic.width(); x0++){
         for(unsigned y0 = 1; y0 < pic.height(); y0++){
             Point2d pixel(x0, y0);
@@ -468,7 +470,7 @@ bool Carddetector::isolateCard_Rotationonly()
     std::string errmsg;
     crop = cardimage;
     
-    std::cerr << " ... success!" << std::endl;
+    //std::cerr << " ... success!" << std::endl;
     return true;
 }
 

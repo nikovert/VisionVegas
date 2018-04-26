@@ -17,6 +17,36 @@
 
 typedef unsigned char uchar;
 
+struct HSL //hue, saturation, lightness
+{
+    double h;
+    double s;
+    double l;
+    HSL() : h(0), s(0), l(0) { }
+    HSL(double hue, double saturation, double lightness) : h(hue), s(saturation), l(lightness) { }
+    void operator=(const HSL& other) { h=other.h; s=other.s; l=other.l; }
+    bool operator<=(const HSL& other)
+    {
+        return (h <= other.h) && (s <= other.s) && (l <= other.l);
+    }
+    bool operator<(const HSL& other)
+    {
+        return (h < other.h) && (s < other.s) && (l < other.l);
+    }
+    bool operator>=(const HSL& other)
+    {
+        return (h >= other.h) && (s >= other.s) && (l >= other.l);
+    }
+    bool operator>(const HSL& other)
+    {
+        return (h > other.h) && (s > other.s) && (l > other.l);
+    }
+    bool operator==(const HSL& other) //not recomended except for cases where == is def.
+    {
+        return (h == other.h) && (s == other.s) && (l == other.l);
+    }
+};
+
 struct RGB
 {
 	uchar r;
@@ -45,11 +75,14 @@ struct RGB
     {
         return (r == other.r) && (g == other.g) && (b == other.b);
     }
-
 };
 
+
+HSL convert(RGB rgb);
+RGB convert(HSL hsl);
 bool operator==(RGB& col1, RGB& col2);
 std::ostream& operator<<(std::ostream& os, const RGB& color);
+std::ostream& operator<<(std::ostream& os, const HSL& color);
 
 //-------------------------------------------------------------------------------------
 class BinaryImage   //true == white, false == black
@@ -117,6 +150,8 @@ public:
 	const RGB& at(unsigned index) const;
 
 public:
+    void histequalization();
+    
 	void drawLine(int x1, int y1, int x2, int y2, const RGB& color);
 	void drawLine(const Line2d& line, const RGB& color) { drawLine(line.p1.X(),line.p1.Y(),line.p2.X(),line.p2.Y(),color); }
 	void drawMarker(int x, int y, const RGB& color, int size=2);
