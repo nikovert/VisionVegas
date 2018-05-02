@@ -377,8 +377,10 @@ void train(){
     p.saveWeights("../../weights");
 }
 
+void player_test();
 
 int main(int, const char **)
 {
+	// player();
 	player();
 }

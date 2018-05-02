@@ -15,7 +15,7 @@
 
 #include <blobdetector.hpp>
 
-typedef enum CARD_TYPE {jqk, number, ace};
+enum CARD_TYPE {jqk, number, ace};
 
 struct card_value {
 	CARD_TYPE type;
