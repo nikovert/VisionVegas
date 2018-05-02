@@ -16,6 +16,13 @@
 
 #include <blobdetector.hpp>
 
+enum CARD_TYPE {jqk, number, ace};
+
+struct card_value {
+	CARD_TYPE type;
+	int val;
+};
+
 class Carddetector
 {
 private:

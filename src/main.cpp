@@ -8,6 +8,7 @@
 #include <image.hpp>
 #include <card.hpp>
 #include <carddetector.hpp>
+#include <player.hpp>
 
 #include <cstdio>
 #include <cstdarg>
@@ -462,6 +463,9 @@ void trainBackground()
     p.setW(w);
     p.saveWeights("../../weights");
 }
+
+
+void player_test();
 
 void trainNumbers()
 {
