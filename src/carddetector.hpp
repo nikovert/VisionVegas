@@ -16,9 +16,11 @@
 
 #include <blobdetector.hpp>
 
-enum CARD_TYPE {jqk, number, ace};
+enum CARD_TYPE {jqk, number, ace, inv};
 
 struct card_value {
+    card_value(CARD_TYPE t, int v) : type(t), val(v) {}
+    card_value() {}
 	CARD_TYPE type;
 	int val;
 };

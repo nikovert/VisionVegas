@@ -53,8 +53,8 @@ std::ostream& operator<<(std::ostream& out, card_value& cv)
 bool GameState::gotCard(card_value cv, WHOS_TURN wt)
 {
 	unsigned cv_t;
-	if (cv.type == jqk && cv.val == 10) cv_t = 10;
-	else if (cv.type == ace && cv.val == 1) cv_t = 0;
+    if (cv.type == jqk) cv.val = cv_t = 10;
+	else if (cv.type == ace) cv_t = 0, cv.val = 1;
 	else if (cv.type == number && cv.val >= 2 && cv.val <= 10) cv_t = cv.val;
 	else return false;
 
@@ -186,9 +186,38 @@ bool _hit()
 }
 
 card_value getCard_notalk() {
-	card_value cv;
-	std::cin >> cv;
-	return cv;
+    Card card;
+    Image im;
+    std::string errmsg;
+    card.loadBackgroundPerceptron();
+    std::string numbers[] = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"};
+    
+    //read the image
+    card.updateImage(errmsg);
+    
+    //create a carddetector with the current card
+    Carddetector detector(card);
+    
+    //isolate the card by detecting the background and rotate
+    if(detector.isolateCard()){
+        detector.isolateValue();    //now cut the card so that only the number of the card is shown
+        detector.retrieveValue(im); //return the croped number
+        NumberPerceptron p;         //load the Perceptron for the value detection
+        p.setW(p.readNumberWeights("../../Numberweights")); //have the perceptron red its weights
+        p.setImage(im);             //add the image to the Perceptron
+        int result = p.evalMax();   //evaluate the value
+        
+        // output value of the card
+        std::cout << "Card value: " << numbers[result] << "\n";
+        
+        if(result < 9) return card_value(number,result+2);
+        if(result == 12) return card_value(ace,1);
+        return card_value(jqk,result);
+    }
+    else
+        std::cout << "Card Failed!" << "\n";
+    return card_value(inv,-1);
+    
 }
 
 card_value get_card()

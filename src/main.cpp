@@ -59,6 +59,7 @@ void singleCard(){
     std::cout << "Reading File: " << file << std::endl;
     
     str.append(file);
+    
     //read the image
     card.readImage(errmsg, str);
     //create a carddetector with the current card
