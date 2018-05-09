@@ -18,11 +18,30 @@ bool threshhold(RGB pixel)
     return false;
 }
 
-bool Carddetector::isolateValue(){
+int Carddetector::detectValue(){
+    //now cut the card so that only the number of the card is shown
+    if(!isolateValueMethod1()){
+        std::cout << "trying alternative!" << std::endl;
+        isolateValueAlternative1(); //if Method1 fails, try alternative!
+    }
+    NumberPerceptron p;         //load the Perceptron for the value detection
+    p.setW(p.readNumberWeights("../../Numberweights")); //have the perceptron red its weights
+    p.setImage(value);             //add the image to the Perceptron
+    int result = p.evalMax();
+    return result;
+}
+
+bool Carddetector::isolateValueMethod1(){
     if(!crop.isAllocated()){
         std::cerr << "ERROR in isolateValue: crop isn't Allocated" << std::endl;
         return false;
     }
+    
+    std::string errmsg;
+    std::string str = currentCard;
+    str.append("crop.pnm");
+    crop.writePNM(str, errmsg);
+    
     double divisionX = 6;
     double divisionY = 7;
     
@@ -41,11 +60,14 @@ bool Carddetector::isolateValue(){
                     value.at(value.width() - (x0 - startX), value.height() - (y0 - startY)) = RGB(0, 0, 0);
                 }
             } catch (std::out_of_range) {
-                std::cerr << "out of dimensions in isolateValue: caught exception"<< std::endl;
+                std::cerr << "out of dimensions in isolateValue1: caught exception"<< std::endl;
                 return false;
             }
         }
     }
+    str = currentCard;
+    str.append("value.pnm");
+    value.writePNM(str, errmsg);
     
     //smooth image
     for(unsigned x = 1; x < value.width()-1; x++)
@@ -100,7 +122,7 @@ bool Carddetector::isolateValue(){
                     }
                 }
             } catch (std::out_of_range) {
-                std::cerr << "out of dimensions in isolateValue: caught exception"<< std::endl;
+                std::cerr << "out of dimensions in isolateValue2: caught exception"<< std::endl;
                 return false;
             }
         }
@@ -131,7 +153,161 @@ bool Carddetector::isolateValue(){
                     crop.at(x0, y0) = RGB(0, 0, 0);
                 }
             } catch (std::out_of_range) {
-                std::cerr << "out of dimensions in isolateValue: caught exception"<< std::endl;
+                std::cerr << "out of dimensions in isolateValue3: caught exception"<< std::endl;
+                return false;
+            }
+        }
+    }
+    value.create(valueWidth, valueHeight, RGB(255,255,255));
+    
+    double s1 = value.width()/crop.width();
+    double s2 = value.height()/crop.height();
+    
+    //std::cout << "cropValue.x: " << cropValue.x << " cropValue.y: " << cropValue.y << std::endl;
+    //std::cout << "s1: " << s1 << " s2: " << s2 << std::endl;
+    
+    Matrix3x3 scalingMatrix(s1, 0, 0, 0, s2, 0, 0, 0, 1);
+    
+    for(unsigned x0 = 1; x0 < crop.width(); x0++){
+        for(unsigned y0 = 1; y0 < crop.height(); y0++){
+            Vector3d pixel3d(x0,y0,1);
+            Vector3d newPixel;
+            newPixel = scalingMatrix * pixel3d;
+            try {
+                value.at(round(newPixel.x), round(newPixel.y)) = crop.at(x0, y0);
+            } catch (std::out_of_range) {
+                std::cerr << "out of dimensions: " << newPixel.x << " " << newPixel.y << std::endl;
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool Carddetector::isolateValueAlternative1(){
+    if(!crop.isAllocated()){
+        std::cerr << "ERROR in isolateValueAlternative: crop isn't Allocated" << std::endl;
+        return false;
+    }
+    
+    std::string errmsg;
+    std::string str = currentCard;
+    str.append("cropAlternative.pnm");
+    crop.writePNM(str, errmsg);
+    
+    double divisionX = 6;
+    double divisionY = 7;
+    
+    double width = ((double)crop.width()/divisionX);
+    double height = ((double)crop.height()/divisionY);
+    
+    value.create(width, height, RGB(255, 255, 255));
+    
+    unsigned startX = ((double)crop.width() * (divisionX-1))/divisionX;
+    unsigned startY = ((double)crop.height() * (divisionY-1))/divisionY;
+    
+    for(unsigned x0 = 0; x0 < width-1; x0++){ //minus divisionX, to get rid of error on the edge
+        for(unsigned y0 = 0; y0 < height-1; y0++){
+            try {
+                if(!(crop.at(x0, y0) == defaultBackground || threshhold(crop.at(x0, y0)))){
+                    value.at(x0, y0) = RGB(0, 0, 0);
+                }
+            } catch (std::out_of_range) {
+                std::cerr << "out of dimensions in isolateValueAlternative1: caught exception"<< std::endl;
+                return false;
+            }
+        }
+    }
+    
+    str = currentCard;
+    str.append("valueAlternative.pnm");
+    value.writePNM(str, errmsg);
+    
+    //smooth image
+    for(unsigned x = 1; x < value.width()-1; x++)
+        for(unsigned y = 1; y < value.height()-1; y++){
+            try {
+                if(x == 0 || y == 0 || x == value.width()-1 || y == value.height()-1)
+                    value.at(x, y) = RGB(255, 255, 255);
+                else{
+                    if(value.at(x, y) == RGB(0, 0, 0)){
+                        short surroundingPixel(0); //how many surronding pixels are also black
+                        if(value.at(x+1, y) == RGB(255, 255, 255))
+                            surroundingPixel++;
+                        if(value.at(x-1, y) == RGB(255, 255, 255))
+                            surroundingPixel++;
+                        if(value.at(x, y+1) == RGB(255, 255, 255))
+                            surroundingPixel++;
+                        if(value.at(x, y-1) == RGB(255, 255, 255))
+                            surroundingPixel++;
+                        if(value.at(x+1, y+1) == RGB(255, 255, 255))
+                            surroundingPixel++;
+                        if(value.at(x+1, y-1) == RGB(255, 255, 255))
+                            surroundingPixel++;
+                        if(value.at(x-1, y-1) == RGB(255, 255, 255))
+                            surroundingPixel++;
+                        if(value.at(x-1, y+1) == RGB(255, 255, 255))
+                            surroundingPixel++;
+                        
+                        if(surroundingPixel >= 7)
+                            value.at(x, y) = RGB(255, 255, 255);
+                    }
+                    if(value.at(x, y) == RGB(255, 255, 255)){
+                        short surroundingPixel(0); //how many surronding pixels are also black
+                        if(value.at(x+1, y) == RGB(0, 0, 0))
+                            surroundingPixel++;
+                        if(value.at(x-1, y) == RGB(0, 0, 0))
+                            surroundingPixel++;
+                        if(value.at(x, y+1) == RGB(0, 0, 0))
+                            surroundingPixel++;
+                        if(value.at(x, y-1) == RGB(0, 0, 0))
+                            surroundingPixel++;
+                        if(value.at(x+1, y+1) == RGB(0, 0, 0))
+                            surroundingPixel++;
+                        if(value.at(x+1, y-1) == RGB(0, 0, 0))
+                            surroundingPixel++;
+                        if(value.at(x-1, y-1) == RGB(0, 0, 0))
+                            surroundingPixel++;
+                        if(value.at(x-1, y+1) == RGB(0, 0, 0))
+                            surroundingPixel++;
+                        
+                        if(surroundingPixel >= 7)
+                            value.at(x, y) = RGB(0, 0, 0);
+                    }
+                }
+            } catch (std::out_of_range) {
+                std::cerr << "out of dimensions in isolateValueAlternative2: caught exception"<< std::endl;
+                return false;
+            }
+        }
+    
+    //recrop image ___________________________________________________________________________________________________________________________
+    
+    //repeat crop
+    unsigned maxX(0), maxY(0), minX(value.width()), minY(value.height());
+    for(unsigned x = 0; x < value.width(); x++)
+        for(unsigned y = 0; y < value.height(); y++){
+            if(value.at(x, y) == RGB(0, 0, 0) && x > maxX)
+                maxX = x;
+            if(value.at(x, y) == RGB(0, 0, 0) && y > maxY)
+                maxY = y;
+            if(value.at(x, y) == RGB(0, 0, 0) && x < minX)
+                minX = x;
+            if(value.at(x, y) == RGB(0, 0, 0) && y < minY)
+                minY = y;
+            
+        }
+    //std::cout << "max: " << maxX << " " << maxY << " min: " << minX << " " <<  minY << std::endl;
+    crop.create(maxX-minX, maxY-minY, RGB(255,255,255));
+    
+    for(unsigned x0 = 0; x0 < maxX - minX; x0++){ //minus 5, to get rid of error on the edge
+        for(unsigned y0 = 0; y0 < maxY - minY; y0++){
+            try {
+                if((value.at(x0 + minX, y0 + minY) == RGB(0,0,0))){
+                    crop.at(x0, y0) = RGB(0, 0, 0);
+                }
+            } catch (std::out_of_range) {
+                std::cerr << "out of dimensions in isolateValueAlternative3: caught exception"<< std::endl;
                 return false;
             }
         }
@@ -176,7 +352,6 @@ bool Carddetector::isolateCard()
     
     Image pic;
     playingcard.cloneImageTo(pic);
-    
     if(!pic.isAllocated()){
         std::cerr << "ERROR in isolateCard: pic isn't Allocated" << std::endl;
         return false;
@@ -231,7 +406,14 @@ bool Carddetector::detectCard(std::vector<Point2d>& boundary_points, double dist
     Image im;
     playingcard.cloneImageTo(im); //copies image to pic
     
-    simpleMask(); //creates mask
+    simpleMask(); //creates mask and saves in mask
+    std::string errmsg;
+    std::string str = currentCard;
+    str.append("mask.pnm");
+    mask.writePNM(str, errmsg);
+    mask.erosion(2);
+    str.append("erosion.pnm");
+    mask.writePNM(str, errmsg);
     
     boundary_points.clear();
     if(!im.isAllocated()){
@@ -408,7 +590,7 @@ bool Carddetector::isolateCard_Rotationonly()
     //std::cout << "Rotation angle error: " << rotation_angle_error << std::endl;
     if(rotation_angle_error > 175.0) rotation_angle_error = std::abs(rotation_angle_error-180);
     if(std::abs(rotation_angle_error) > 5.0){
-        std::cerr << "Angles don't match!" << std::endl;
+        std::cerr << "ERROR in isolateCard_Rotationonly: Angles don't match!" << std::endl;
         return false;
     }
     

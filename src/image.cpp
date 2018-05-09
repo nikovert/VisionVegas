@@ -187,32 +187,101 @@ RGB convert(HSL hsl)
     return rgb;
 }
 
+void Image::grey_histequalization(){
+    
+    int* m_dataGrey = new int[pixels()];
+    for(int i = 0; i < pixels(); i++){
+        m_dataGrey[i] = (m_data[i].r + m_data[i].g + m_data[i].b)/3;
+    }
+    
+    for(int i = 0; i < pixels(); i++){
+        //std::cout << "pixel: " << i << " \t " << m_dataGrey[i] << std::endl;
+        RGB color(m_dataGrey[i],m_dataGrey[i],m_dataGrey[i]);
+        m_data[i] = color;
+    }
+    
+    //number of occurences
+    double occurrences[256] = { };
+    for(int i = 0; i < pixels(); i++){
+        occurrences[m_dataGrey[i]] += 1;
+    }
+    
+    //probability
+    double prob[256] = { };
+    for(int i = 0; i < 256; i++){
+        prob[i] =  occurrences[i]/pixels();
+    }
+    
+    //cumulative distribution function
+    double cdf[256] = { };
+    cdf[0] = prob[0];
+    int numberofValues = 0;
+    double cdfmax = 0;
+    double cdfmin = 256;
+    
+    for(int i = 1; i < 256; i++){
+        cdf[i] = cdf[i-1] + prob[i];
+        if(cdfmin > cdf[i]) cdfmin = cdf[i];
+        if(cdfmax < cdf[i]) cdfmax = cdf[i];
+        if(prob[i] > 0.0000001){
+            numberofValues++;
+        }
+        else prob[i] = 0;
+    }
+    
+    //calculate max
+    double max = 0;
+    for(int i = 1; i < 256; i++){
+        if(max < prob[i]) max = prob[i]; //not sure
+    }
+    
+    //histogram equalization formula
+    double h[256] = { };
+    for(int i = 1; i < 256; i++){
+        h[i] = (255 * (cdf[i]*pixels() - cdfmin*255)/(pixels() - cdfmin*255)); //not sure
+    }
+    
+     std::cout << "numberofValues: " << numberofValues << " cdfmax: " << cdfmax  << " cdfmin: " << cdfmin << std::endl;
+     
+     for(int i = 0; i < 256; i++){
+         //std::cout << "pixel: " << i << " \t " << occurrences[i] << std::endl;
+         std::cout << h[i] << " " ;
+     }  std::cout << std::endl;
+    
+    for(int i = 0; i < pixels(); i++){
+        m_dataGrey[i] = h[m_dataGrey[i]];
+        //std::cout << "pixel: " << i << " \t " << m_dataGrey[i] << std::endl;
+        RGB color(m_dataGrey[i],m_dataGrey[i],m_dataGrey[i]);
+        at(i) = color;
+    }
+}
+
 void Image::histequalization(){
-    //TO DO
+    //std::cout << "inHist1" << std::endl;
     HSL* m_dataHSL = new HSL[pixels()];
     for(int i = 0; i < pixels(); i++){
         m_dataHSL[i] = convert(m_data[i]);
     }
-    
+    //std::cout << "inHist2" << std::endl;
     //number of occurences
     double occurrences[100] = { };
     for(int i = 0; i < pixels(); i++){
         occurrences[(int) m_dataHSL[i].l] += 1;
     }
-    
+    //std::cout << "inHist3" << std::endl;
     //probability
     double prob[100] = { };
     for(int i = 0; i < 100; i++){
         prob[i] =  occurrences[i]/pixels();
     }
-    
+    //std::cout << "inHist4" << std::endl;
     //cumulative distribution function
     double cdf[100] = { };
     cdf[0] = prob[0];
     int numberofValues = 0;
     double cdfmax = 0;
     double cdfmin = 100;
-    
+    std::cout << "inHist5" << std::endl;
     for(int i = 1; i < 100; i++){
         cdf[i] = cdf[i-1] + prob[i];
         if(cdfmin > cdf[i]) cdfmin = cdf[i];
@@ -229,27 +298,48 @@ void Image::histequalization(){
         if(max < prob[i]) max = prob[i]; //not sure
         
     }
-    
+    std::cout << "inHist6" << std::endl;
     //histogram equalization formula
     double h[100] = { };
     for(int i = 1; i < 100; i++){
-        h[i] = round(100 * (cdf[i] - cdfmin)/(cdfmax - cdfmin)); //not sure
+        h[i] = (99 * (cdf[i]*pixels() - cdfmin*100)/(pixels() - cdfmin*100)); //not sure
     }
+    
     /*
-    std::cout << "numberofValues: " << numberofValues << " cdfmax: " << cdfmax  << " cdfmin: " << cdfmin << std::endl;
+     std::cout << "numberofValues: " << numberofValues << " cdfmax: " << cdfmax  << " cdfmin: " << cdfmin << std::endl;
     
     for(int i = 0; i < 100; i++){
         //std::cout << "pixel: " << i << " \t " << occurrences[i] << std::endl;
         std::cout<< h[i] << " " ;
     }
-    */
-    
+     */
+    std::cout << "inHist7" << std::endl;
     for(int i = 0; i < pixels(); i++){
         m_dataHSL[i].l = h[(int)(m_dataHSL[i].l)];
         m_data[i] = convert(m_dataHSL[i]);
     }
+    std::cout << "inHistDONE" << std::endl;
 }
 
+void Image::erosion(int repeats){ //erodes noise in mask
+    Image tmp;
+    tmp.create(width(), height());
+    for(unsigned x0 = 1; x0 < width()-1; x0++){
+        for(unsigned y0 = 1; y0 < height()-1; y0++){
+            if(at(x0-1, y0) == RGB(255,255,255) && at(x0+1, y0) == RGB(255,255,255) && at(x0, y0-1) == RGB(255,255,255) && at(x0, y0) == RGB(255,255,255) && at(x0, y0+1) == RGB(255,255,255)){
+                tmp.at(x0, y0) = RGB(255,255,255);
+            }
+            else
+                tmp.at(x0, y0) = RGB(0,0,0);
+        }
+    }
+    for(unsigned x0 = 1; x0 < width()-1; x0++){
+        for(unsigned y0 = 1; y0 < height()-1; y0++){
+            at(x0, y0) = tmp.at(x0, y0);
+        }
+    }
+    if(repeats>1) erosion(repeats-1);
+}
 
 Image::Image() : m_data(0), m_width(0), m_height(0)
 {
@@ -479,6 +569,7 @@ bool Image::readPNM(const std::string& filename, std::string& errmsg)
 
 	delete [] data;
 	file.close();
+    
 	return(true);
 }
 

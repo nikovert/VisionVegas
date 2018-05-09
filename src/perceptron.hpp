@@ -16,8 +16,8 @@
 
 struct BackgroundWeights
 {
-    std::vector<std::vector<int>> w;
-    int weight0;
+    std::vector<std::vector<double>> w;
+    double weight0;
     
     /*
     tl  tc  tr
@@ -25,7 +25,7 @@ struct BackgroundWeights
     bl  bc  br
     */
     
-    BackgroundWeights() :w(9, std::vector<int>(3, 0)), weight0(0) {};
+    BackgroundWeights() :w(9, std::vector<double>(3, 0)), weight0(0) {};
 };
 
 std::ostream& operator<<(std::ostream& os, const BackgroundWeights& w);
@@ -37,10 +37,11 @@ class BackgroundPerceptron
 private:
     BackgroundWeights w;
     
-    BackgroundWeights learn(std::vector<RGB> pixels, bool target); //updates the weights
+    BackgroundWeights learn(std::vector<RGB> pixels, int target); //updates the weights
 public:
     BackgroundPerceptron() {w = BackgroundWeights();};
     bool eval(std::vector<RGB> pixels) const; //returns if the pixel is card(false) or Background(true)
+    double evalValue(std::vector<RGB> pixels) const; //returns the value of eval, not bool
     BackgroundWeights getW();
     void setW(BackgroundWeights weight);
     BackgroundWeights train(); //requires the learning database

@@ -12,6 +12,7 @@
 #include <string>
 #include <iostream>
 #include "geom.hpp"
+#include <vector>
 
 // class BlobDetector;
 
@@ -151,6 +152,9 @@ public:
 
 public:
     void histequalization();
+    void grey_histequalization();
+    
+    void erosion(int repeats);
     
 	void drawLine(int x1, int y1, int x2, int y2, const RGB& color);
 	void drawLine(const Line2d& line, const RGB& color) { drawLine(line.p1.X(),line.p1.Y(),line.p2.X(),line.p2.Y(),color); }

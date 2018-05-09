@@ -67,12 +67,7 @@ void singleCard(){
     
     //isolate the card by detecting the background and rotate
     if(detector.isolateCard()){
-        detector.isolateValue();    //now cut the card so that only the number of the card is shown
-        detector.retrieveValue(im); //return the croped number
-        NumberPerceptron p;         //load the Perceptron for the value detection
-        p.setW(p.readNumberWeights("../../Numberweights")); //have the perceptron red its weights
-        p.setImage(im);             //add the image to the Perceptron
-        int result = p.evalMax();   //evaluate the value
+        int result = detector.detectValue()();
         
         // output value of the card
         std::cout << "Card value: " << numbers[result] << "\n";
@@ -84,6 +79,7 @@ void singleCard(){
     else
         std::cout << "Card Failed!" << "\n";
 }
+
 
 bool cardcheck2(){
     Card card;
@@ -503,21 +499,44 @@ bool histocheck(){
         if(im.isAllocated()){
             im.histequalization();
         
-        // write image to disk
-        std::string output = std::to_string(i) + "_output_" + file;
-        if(!im.writePNM(output,errmsg)) return false;
+            // write image to disk
+            std::string output = std::to_string(i) + "_output_" + file;
+            if(!im.writePNM(output,errmsg)) return false;
         }
         std::cout << "\n";
     }
     return true;
 }
 
+bool singlehistocheck(){
+    Card card;
+    Image im;
+    card.loadBackgroundPerceptron();
+    std::string errmsg;
+    std::string str = "/Users/nikovertovec/Documents/VisionVegas/Noisy unlabeled trainingdata/19.pnm";
+    card.readImage(errmsg, str);
+        
+    // create a copy of the loaded image
+    card.cloneImageTo(im);
+    if(im.isAllocated()){
+        im.histequalization();
+        
+    // write image to disk
+    if(!im.writePNM("posthist.pnm",errmsg)) return false;
+    }
+    std::cout << "\n";
+    return true;
+}
+
 int main(int, const char **)
 {
-    //singleCard();
+    //player();
+    singleCard();
     //cardcheck2();
-    trainBackground();
-    //histocheck();
+    //for(int i = 0; i<10;i++)
+    //    trainBackground();
+    //singlehistocheck();
+    
     /*
     Card card;
     std::string errmsg;

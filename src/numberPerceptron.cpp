@@ -181,7 +181,7 @@ NumberWeights NumberPerceptron::learn(int target)
         for (col = row->begin(); col != row->end(); ++col)
         {
             if(i == 936)
-                columnWeight.push_back((*col) + 100*(targetVec.at(rowInt) - y.at(rowInt)));
+                columnWeight.push_back((*col) + 100*(targetVec.at(rowInt) - y.at(rowInt))); //don't think it should be *100
             else{
                 if(!pic.at(i++)) columnWeight.push_back((*col) + (targetVec.at(rowInt) - y.at(rowInt)));    //pic == false == black
                 else            columnWeight.push_back((*col)  - (targetVec.at(rowInt) - y.at(rowInt)));     //pic == true == white
