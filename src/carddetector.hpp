@@ -70,6 +70,8 @@ public:
     BlobDetector blob;
     void initBlobdetection() {blob.reset(); blob.adddefaultRange();}
     void detectBlobs() {blob.findBlobs(crop); blob.retrieveBlobed(crop);}
-    bool isolateValue();
+    int detectValue();
+    bool isolateValueMethod1();
+    bool isolateValueAlternative1();
 };
 #endif /* carddetector_h */
