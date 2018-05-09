@@ -67,7 +67,7 @@ void singleCard(){
     
     //isolate the card by detecting the background and rotate
     if(detector.isolateCard()){
-        int result = detector.detectValue()();
+        int result = detector.detectValue();
         
         // output value of the card
         std::cout << "Card value: " << numbers[result] << "\n";
@@ -106,7 +106,7 @@ bool cardcheck2(){
         card.cloneImageTo(im);
         
         if(detector.isolateCard()){
-            detector.isolateValue();
+            detector.detectValue();
             detector.retrieveValue(im);
             NumberPerceptron p;
             p.setW(p.readNumberWeights("../../Numberweights"));
@@ -167,7 +167,7 @@ bool cardcheck(){
         detector.initBlobdetection();
         
         if(detector.isolateCard()){
-            detector.isolateValue();
+            detector.detectValue();
             detector.retrieveValue(im);
             // get value of the card
             //std::cout << "Card value: " << card.getValue() << "\n";
