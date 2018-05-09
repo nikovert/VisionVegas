@@ -514,9 +514,10 @@ bool histocheck(){
 
 int main(int, const char **)
 {
+	player();
     //singleCard();
     //cardcheck2();
-    trainBackground();
+    //trainBackground();
     //histocheck();
     /*
     Card card;
