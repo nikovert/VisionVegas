@@ -21,14 +21,17 @@ struct GameState {
 	unsigned stack[c]; // How many aces [0], 2s [1], 10 [9] J-K [10] are left
 	unsigned myAces; // Amount of aces
 	unsigned bankAces;
+	unsigned unknownCardsPlayer;
+	unsigned playerCardsAmount;
+	bool standafter;
 
-	GameState(const GameState& s) : bankScore(s.bankScore), myScore(s.myScore), myAces(s.myAces), bankAces(s.bankAces) {
+	GameState(const GameState& s) : bankScore(s.bankScore), myScore(s.myScore), myAces(s.myAces), bankAces(s.bankAces), unknownCardsPlayer(s.unknownCardsPlayer), standafter(s.standafter), playerCardsAmount(s.playerCardsAmount) {
 		for (unsigned i = 0; i < c; i++) {
 			stack[i] = s.stack[i];
 		}
 	}
 
-	GameState(const GameState& s, unsigned j, WHOS_TURN w) : bankScore(s.bankScore), myScore(s.myScore), myAces(s.myAces), bankAces(s.bankAces) {
+	GameState(const GameState& s, unsigned j, WHOS_TURN w) : bankScore(s.bankScore), myScore(s.myScore), myAces(s.myAces), bankAces(s.bankAces), unknownCardsPlayer(s.unknownCardsPlayer), standafter(s.standafter), playerCardsAmount(s.playerCardsAmount) {
 		for (unsigned i = 0; i < c; i++) {
 			stack[i] = s.stack[i];
 		}
@@ -46,7 +49,7 @@ struct GameState {
 		} else assert(false);
 	}
 
-	GameState() : bankScore(0), myScore(0), myAces(0), bankAces(0) {
+	GameState() : bankScore(0), myScore(0), myAces(0), bankAces(0), unknownCardsPlayer(0), standafter(false), playerCardsAmount(0) {
 		for (unsigned i = 0; i < c; i++) {
 			stack[i] = 4 * nrOfDecks; // A to 10
 		}

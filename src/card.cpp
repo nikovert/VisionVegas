@@ -11,9 +11,9 @@
 bool Card::updateImage(std::string& errmsg)
 {
 	// uncomment when you want to use a new snapshot from the camera instead of using the same image over and over ...
-	// system("/home/ppsadm/FrameGrabber/requestframe.sh"); // image will be copied to ./frame.pnm
+	system("/home/ppsadm/FrameGrabber/requestframe.sh"); // image will be copied to ./frame.pnm
 	//return(im.readPNM("../captured.pnm",errmsg));
-	return(im.readPNM("../../card_images/k6.2.pnm",errmsg));
+	return(im.readPNM("captured.pnm",errmsg));
 }
 
 bool Card::readImage(std::string& errmsg, std::string& str)
@@ -145,7 +145,7 @@ bool Card::detectCardBoundary(std::vector<Point2d>& boundary_points, double dist
 
 bool Card::loadBackgroundPerceptron()
 {
-    percep.setW(percep.readBackgroundWeights("../../weights"));
+    percep.setW(percep.readBackgroundWeights("../weights"));
     if(percep.getW().weight0 == 0) return false;
     usingPerceptron = true;
     //std::cout << "Using weights: " << percep.getW() << std::endl;

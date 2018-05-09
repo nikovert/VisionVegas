@@ -530,13 +530,12 @@ bool singlehistocheck(){
 
 int main(int, const char **)
 {
-    //player();
-    singleCard();
+    player();
+    //singleCard();
     //cardcheck2();
     //for(int i = 0; i<10;i++)
     //    trainBackground();
     //singlehistocheck();
-    
     /*
     Card card;
     std::string errmsg;
