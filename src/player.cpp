@@ -5,6 +5,8 @@
 #include <string>
 #include <stdexcept>
 #include <cassert>
+#include <chrono>
+#include <ctime>
 
 std::istream& operator>>(std::istream& in, card_value& cv)
 {
@@ -45,7 +47,9 @@ std::ostream& operator<<(std::ostream& out, card_value& cv)
 		out << cv.val << std::endl;
 	else if (cv.type == ace)
 		out << "Ace\n";
-	else out << "JQK\n";
+	else if (cv.type == jqk)
+		out << "JQK\n";
+	else out << "Invalid\n";
 
 	return out;
 }
@@ -56,7 +60,6 @@ bool GameState::gotCard(card_value cv, WHOS_TURN wt)
     if (cv.type == jqk) cv.val = cv_t = 10;
 	else if (cv.type == ace) cv_t = 0, cv.val = 1;
 	else if (cv.type == number && cv.val >= 2 && cv.val <= 10) cv_t = cv.val;
-	else return false;
 
 	if (wt == BANK) {
 		if (stack[cv_t]-- != 0) {
@@ -64,10 +67,13 @@ bool GameState::gotCard(card_value cv, WHOS_TURN wt)
 			if (cv.type == ace) bankAces++;
 		} else return false;
 	} else if (wt == PLAYER) {
-		if (stack[cv_t]-- != 0) {
+		playerCardsAmount++;
+		if (cv.type != inv && stack[cv_t]-- != 0) {
 			myScore += cv.val;
 			if (cv.type == ace) myAces++;
-		} else return false;
+		} else  { // Card unknown
+			unknownCardsPlayer++;
+		}
 	} else return false;
 
 	return true;
@@ -86,7 +92,7 @@ static float endExpectedValue(const GameState state);
 
 static decisionNode* pub_play(GameState state)
 {
-	return new decisionNode(state, stand(state), hit(state));
+	if (state.unknownCardsPlayer == 0) return new decisionNode(state, stand(state), hit(state));
 }
 
 static float play(GameState state)
@@ -99,19 +105,34 @@ static float play(GameState state)
 
 static float stand(GameState state)
 {
+	if (state.unknownCardsPlayer > 0) {
+		state.unknownCardsPlayer--;
+		state.standafter = true;
+		return hit(state);
+	}
 	if (state.myScore > 21) return -1.0;
 	else return bank(state);
 }
 
 static float hit(GameState state)
 {
+	float (*playorhit)(GameState);
+	if (state.unknownCardsPlayer > 0) {
+		playorhit = &hit;
+		state.unknownCardsPlayer--;
+	}
+	else if (state.standafter) {
+		return stand(state);
+	}
+	else playorhit = &play;
+
 	float p[c];
 	probabilities(state, p);
 
 	float expectedVal = 0;
 	for (unsigned i = 0; i < c; i++) {
 		if (state.stack[i] == 0) continue;
-		expectedVal += p[i] * play(GameState(state,i,PLAYER));
+		expectedVal += p[i] * playorhit(GameState(state,i,PLAYER));
 	}
 
 	return expectedVal;
@@ -185,7 +206,7 @@ bool _hit()
 	else return false;
 }
 
-card_value getCard_notalk() {
+card_value getCard_notalk(double& accTime, double& procTime) {
     Card card;
     Image im;
     std::string errmsg;
@@ -193,9 +214,15 @@ card_value getCard_notalk() {
     std::string numbers[] = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"};
     
     //read the image
+    auto start = std::chrono::system_clock::now();
     card.updateImage(errmsg);
+    auto end = std::chrono::system_clock::now();
+    std::chrono::duration<double> accTimechrono = end-start;
+    accTime = 1000.0 * accTimechrono.count();
+
     
     //create a carddetector with the current card
+    auto start2 = std::chrono::system_clock::now();
     Carddetector detector(card);
     
     //isolate the card by detecting the background and rotate
@@ -203,19 +230,29 @@ card_value getCard_notalk() {
         detector.isolateValue();    //now cut the card so that only the number of the card is shown
         detector.retrieveValue(im); //return the croped number
         NumberPerceptron p;         //load the Perceptron for the value detection
-        p.setW(p.readNumberWeights("../../Numberweights")); //have the perceptron red its weights
+        p.setW(p.readNumberWeights("../Numberweights")); //have the perceptron red its weights
         p.setImage(im);             //add the image to the Perceptron
         int result = p.evalMax();   //evaluate the value
         
         // output value of the card
-        std::cout << "Card value: " << numbers[result] << "\n";
+        // std::cout << "Card value: " << numbers[result] << "\n";
         
+        auto end2 = std::chrono::system_clock::now();
+        std::chrono::duration<double> procTimechrono = end2-start2;
+        procTime = 1000.0 * procTimechrono.count();
+
         if(result < 9) return card_value(number,result+2);
         if(result == 12) return card_value(ace,1);
+
         return card_value(jqk,result);
     }
     else
         std::cout << "Card Failed!" << "\n";
+
+    auto end2 = std::chrono::system_clock::now();
+    std::chrono::duration<double> procTimechrono = end2-start2;
+    procTime = 1000.0 * procTimechrono.count();
+
     return card_value(inv,-1);
     
 }
@@ -223,7 +260,8 @@ card_value getCard_notalk() {
 card_value get_card()
 {
 	std::cout << "Enter a card\n";
-	return getCard_notalk();
+	double a,b;
+	return getCard_notalk(a,b);
 }
 
 // Return true if we want to play again
@@ -236,20 +274,28 @@ void player()
 {
 	card_value bankCard;
 	GameState state;
+	double procTime, accTime;
 	bool hitMe = true;
 	std::cout << "Starting game. Please enter bank card value\n";
 	std::cin >> bankCard;
+	std::cin.ignore(256, '\n'); // Continue on enter
 	state.gotCard(bankCard, BANK);
 
 	std::cout << "Please press enter to get player card\n";
 
 	while (hitMe) {
 		hitMe = false;
-		std::cin.ignore(); // Continue on enter
+		std::cin.ignore(256, '\n'); // Continue on enter
 
-		card_value myCard = getCard_notalk();
+		card_value myCard = getCard_notalk(accTime, procTime);
 		state.gotCard(myCard, PLAYER);
-		if (stand(state) < hit(state)) {
+
+		//  Build a decision tree for the case that we dont know one card
+		// Evaluate stand and hit to get a stand vector and hit vector for all cards
+		// Get p vector of which cards are left
+		// Do stand_vector * p < hit_vector * p
+
+		if (state.playerCardsAmount < 2 || stand(state) < hit(state)) {
 			hitMe = true;
 		}
 
@@ -258,7 +304,8 @@ void player()
 		std::cout << "action: ";
 		if (hitMe) std::cout << "hit\n";
 		else std::cout << "stand\n";
-
+		std::cout << "processing time: " << procTime << " ms\n";
+		std::cout << "image access time: " << accTime << "ms\n\n";
 	}
 
 }
